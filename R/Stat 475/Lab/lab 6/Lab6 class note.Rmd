@@ -1,0 +1,319 @@
+---
+title: "Lab6"
+output:
+  html_document:
+    df_print: paged
+---
+Ben Porter
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data
+```{r}
+steel <- read.csv("steel.csv")
+steel
+
+# Sample mean and covariance of group 1
+xbar1 <- colMeans(steel[steel$temp == 1, -1])
+xbar1
+xvar1 <- var(steel[steel$temp == 1, -1])
+xvar1
+
+# Sample mean and covariance of group 2
+xbar2 <- colMeans(steel[steel$temp == 2, -1])
+xbar2
+xvar2 <- var(steel[steel$temp == 2, -1])
+xvar2
+
+# Scatterplot of two groups
+library(ggplot2)
+ggplot(steel, aes(yield, strength)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  facet_wrap(~ temp)
+
+# Check normality for each group
+# library(mvShapiroTest)
+# mvShapiro.Test(as.matrix(steel[steel$temp == 1, -1]))
+# mvShapiro.Test(as.matrix(steel[steel$temp == 2, -1]))
+apply(steel[steel$temp == 1, -1], 2, shapiro.test)
+apply(steel[steel$temp == 2, -1], 2, shapiro.test)
+
+# Check homogeneity of covariance matrices
+library(biotools)
+boxM(steel[, -1], steel$temp)
+
+# Hotelling T-squared test
+library(DescTools)
+t2test <- HotellingsT2Test(steel[steel$temp == 1, -1], steel[steel$temp == 2, -1])  # T.2 is F-statistic
+t2test
+```
+
+## Exercise 1
+(a)
+H0: (mu_11, mu_12) = (mu_11, mu_12), where mu_ij is the population mean of j-th variable in group i.
+
+These two groups have the same population mean of (yield, strength).
+
+
+(b)
+```{r}
+library(DescTools)
+steel <- read.csv("steel.csv")
+t2test <- HotellingsT2Test(steel[steel$temp == 1, -1], steel[steel$temp == 2, -1])  # T.2 is F-statistic
+t2test
+```
+
+
+
+(c)
+p-value (0.004106 < 0.05) reject H0. Two groups have different mean.
+
+
+(d)
+```{r}
+apply(steel[steel$temp == 1, -1], 2, shapiro.test)
+apply(steel[steel$temp == 2, -1], 2, shapiro.test)
+
+
+library(biotools)
+boxM(steel[, -1], steel$temp)
+
+
+```
+valid. normal assumption, equal variance assumption.
+
+
+## Simultaneous Confidence Intervals
+```{r}
+# Compute sample sizes and number of variables
+n1 <- nrow(steel[steel$temp == 1, -1])
+n2 <- nrow(steel[steel$temp == 2, -1])
+p <- ncol(steel[, -1])
+
+# Enter the confidence level
+level <- 0.95
+
+# Compute degrees of freedom and the multipliers
+df1 <- p
+df2 <- n1 + n2 - p - 1
+df3 <- n1 + n2 - 2
+c_T2 <- sqrt((n1 + n2 - 2) * p * qf(level, df1, df2) / (n1 + n2 - p - 1))
+levelt <- 1 - (1 - level) / 2
+levelb <- 1 - (1 - level) / (2 * p)
+c_bon <- qt(levelb, df3)
+
+# Compute pooled covariance matrix 
+vpool <- ((n1 - 1) * xvar1 + (n2 - 1) * xvar2) / (n1 + n2 - 2)
+
+#  Compute Hotelling's T-squared limits
+lower_limit <- (xbar1 - xbar2) - c_T2 * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+upper_limit <- (xbar1 - xbar2) + c_T2 * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+rbind(lower_limit, upper_limit)
+
+# Compute Bonferroni limits
+lower_limit <- (xbar1 - xbar2) - c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+upper_limit <- (xbar1 - xbar2) + c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+rbind(lower_limit, upper_limit)
+
+# Compute one-at-a-time limits
+lower_limit <- (xbar1 - xbar2) - qt(levelt, df3) * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+upper_limit <- (xbar1 - xbar2) + qt(levelt, df3) * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+rbind(lower_limit, upper_limit)
+```
+
+## Permutation Test
+```{r}
+T2.observed <- t2test$statistic * (p * (n1 + n2 - 2)) / (n1 + n2 - p - 1)
+
+set.seed(475)  # SET SEED!
+HT2.permute <- c()
+for (i in 1:500) {
+  sample1 <- sample(1:12, 5)
+  sample2 <- setdiff(1:12, sample1)
+  X.permute <- steel[sample1, -1]
+  Y.permute <- steel[sample2, -1]
+  HT2.permute[i] <- HotellingsT2Test(X.permute, Y.permute)$statistic[1] * (p * (n1 + n2 - 2)) / (n1 + n2 - p - 1)
+}
+
+qplot(HT2.permute, geom = "histogram") +
+  geom_vline(xintercept = T2.observed)
+pvalue.permute <- mean(unique(HT2.permute) > T2.observed[1])
+pvalue.permute
+```
+
+## Exercise 2
+p-value(0.01481481) < 0.05, reject H0. The two groups have different means.
+
+
+## Data for the college students study
+```{r}
+morel <- read.csv("morel.csv")
+morel$group <- as.factor(morel$group)
+
+fit.lm <- lm(cbind(aptitude, math, language, gen_know) ~ group, data = morel)
+summary(fit.lm)
+
+fit.lmsas <- lm(cbind(aptitude, math, language, gen_know) ~ group, data = morel,
+                contrasts = list(group = contr.SAS))  # Use contrasts same as in SAS
+summary(fit.lmsas)
+
+# Compute the F-test for the Wilks criterion
+library(car)
+fit.manova <- Manova(fit.lm)  # Manova, not monova
+summary(fit.manova)
+```
+
+## Exercise 3
+(a)
+H0: (mu_11, mu_12, mu_13, mu_14) = (mu_21, mu_22, mu_23, mu_24) = (mu_31, mu_32, mu_33, mu_34), where mu_ij is the population mean of j-th variable in group i.
+
+Three groups have the same population mean of (aptitdue, math, language, gen_know).
+
+Ha: at least two groups have different population mean on 1 of 4 variables.
+
+(b)
+```{r}
+library(car)
+morel <- read.csv("morel.csv")
+morel$group <- as.factor(morel$group)
+
+fit.lm <- lm(cbind(aptitude, math, language, gen_know) ~ group, data = morel)
+fit.manova <- Manova(fit.lm)  # Manova, not monova
+summary(fit.manova)
+
+```
+wilks: 0.5434483
+
+F: 6.773565
+
+df: 2 and 8
+
+pvalue: 1.3843e-07
+
+pvalue < 0.05, reject H0. At least two groups have different population mean on 1 of 4 variables.
+
+
+## Web Scraping - rvest package
+```{r}
+library(rvest)
+
+url <- "https://www.the-numbers.com/weekend-box-office-chart"
+html <- read_html(url)
+html
+
+tables <- html_table(x = html, fill = T)
+length(tables)
+tables
+dim(tables[[2]])
+head(tables[[2]])
+
+info <- tables[[2]]
+names(info)[1:2] <- c("Rank", "Rank.Last.Week")
+str(info)
+
+library(readr)
+info$Gross.num <- parse_number(info$Gross)
+
+t0 <- as.Date("2021-06-01")
+t <- t0 + 0:90
+t1 <- gsub("-", "/", t)
+link <- paste("https://www.the-numbers.com/box-office-chart/daily/", t1, sep = "")
+
+res <- list()
+for (i in 1:91) {
+  link.temp <- link[i]
+  html <- read_html(link.temp)
+  tables <- html_table(x = html, fill = T)
+  info <- tables[[2]]
+  names(info)[1:2] <- c("Rank", "Rank.Last.Week")
+  info$Gross.num <- parse_number(info$Gross)
+  res[[i]] <- info
+}
+
+n <- c()
+total.gross <- c()
+for (i in 1:91) {
+  n[i] <- nrow(res[[i]])
+  total.gross[i] <- sum(res[[i]]$Gross.num, na.rm = T)
+}
+
+data <- data.frame(date = t, movie.num = n, movie.total.gross = total.gross)
+qplot(t, movie.total.gross, data = data, geom = "line")
+```
+
+## Exercise 4
+
+```{r}
+library(rvest)
+library(readr)
+
+url <- "https://www.the-numbers.com/box-office-chart/weekend/2021/09/10"
+html <- read_html(url)
+
+
+tables <- html_table(x = html, fill = T)
+
+
+info <- tables[[2]]
+names(info)[1:2] <- c("Rank", "Rank.Last.Week")
+str(info)
+
+library(readr)
+info$Gross.num <- parse_number(info$Gross)
+
+t0 <- as.Date("2021-06-01")
+t <- t0 + 0:90
+t1 <- gsub("-", "/", t)
+link <- paste("https://www.the-numbers.com/box-office-chart/daily/", t1, sep = "")
+
+res <- list()
+for (i in 1:91) {
+  link.temp <- link[i]
+  html <- read_html(link.temp)
+  tables <- html_table(x = html, fill = T)
+  info <- tables[[2]]
+  names(info)[1:2] <- c("Rank", "Rank.Last.Week")
+  info$Gross.num <- parse_number(info$Gross)
+  res[[i]] <- info
+}
+
+n <- c()
+total.gross <- c()
+for (i in 1:91) {
+  n[i] <- nrow(res[[i]])
+  total.gross[i] <- sum(res[[i]]$Gross.num, na.rm = T)
+}
+
+data <- data.frame(date = t, movie.num = n, movie.total.gross = total.gross)
+qplot(t, movie.total.gross, data = data, geom = "line")
+
+```
+The spikes of the graph are when movies are released and movies make more money in mid-July.
+
+## Web Scraping - beyond tables (optional)
+```{r}
+url <- "http://www.baseball-reference.com/players/a/"
+html <- read_html(url)
+html.res <- html_elements(x = html, "#div_players_ a") 
+head(html.res)
+html_text(html.res)
+html_attr(html.res, name = "href")
+
+url <- "https://www.baseball-reference.com/players/a/aardsda01.shtml"
+html <- read_html(url)
+html.res <- html_element(x = html, ".stats_pullout") 
+html.res
+text <- html_text2(html.res)
+text
+
+library(stringr)
+text %>%
+  str_remove_all("SUMMARY|Career") %>%
+  str_replace_all("[\n]+", "\t") %>%
+  str_trim() %>%
+  str_split("\t", simplify = T) %>%
+  matrix(nrow = 2)
+```

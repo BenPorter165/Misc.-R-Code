@@ -1,0 +1,263 @@
+---
+title: "Lab7"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Ben Porter
+
+## Data for the college students study (MANOVA)
+```{r}
+morel <- read.csv("morel.csv")
+morel$group <- as.factor(morel$group)
+
+# Compute the F-test for the Wilks criterion
+library(car)
+fit.lm <- lm(cbind(aptitude, math, language, gen_know) ~ group, data = morel)
+fit.manova <- Manova(fit.lm)  # Manova, not monova
+summary(fit.manova)
+```
+
+## Exercise 1
+
+independence - all data are independent to each other.
+
+Homogeneity variance - The covariance matrices are the same for all groups.
+
+normality - each group follows a multi-normal distribution.
+
+## Homogeneous covariance matrices
+```{r}
+library(biotools)
+boxM(morel[, -1], morel$group)
+```
+
+## Simultaneous inference for pairs of means
+```{r}
+# Compute sample sizes and number of variables
+n1 <- nrow(morel[morel$group == 1, -1])
+n2 <- nrow(morel[morel$group == 2, -1])
+n3 <- nrow(morel[morel$group == 3, -1])
+p <- ncol(morel[, -1])
+g <- 3
+
+# Enter the confidence level
+level <- 0.95
+
+# Compute Bonferroni Confidence Intervals for each student population
+m <- p * g * (g - 1) / 2  # p dimensions, g (g-1) / 2 combinations (choose 2 out of g)
+levelb <- 1 - ((1 - level) / (2 * m))
+df <- n1 + n2 + n3 - g
+c_bon <- qt(levelb, df)
+
+# Compute Bonferroni limits
+xbar1 <- colMeans(morel[morel$group == 1, -1])
+xbar2 <- colMeans(morel[morel$group == 2, -1])
+xbar3 <- colMeans(morel[morel$group == 3, -1])
+
+
+# 1. Compute pooled covariance matrix
+vpool <- fit.manova$SSPE / df
+
+lower_limit_1v2 <- (xbar1 - xbar2) - c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+upper_limit_1v2 <- (xbar1 - xbar2) + c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+
+lower_limit_1v3 <- (xbar1 - xbar3) - c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n3)))
+upper_limit_1v3 <- (xbar1 - xbar3) + c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n3)))
+
+lower_limit_2v3 <- (xbar2 - xbar3) - c_bon * sqrt(diag(vpool) * ((1 / n2) + (1 / n3)))
+upper_limit_2v3 <- (xbar2 - xbar3) + c_bon * sqrt(diag(vpool) * ((1 / n2) + (1 / n3)))
+
+rbind(lower_limit_1v2, upper_limit_1v2,
+      lower_limit_1v3, upper_limit_1v3,
+      lower_limit_2v3, upper_limit_2v3)
+
+# 2. Or use individual covariance matrix instead of pooled sample covariance matrix
+var1 <- var(morel[morel$group == 1, -1])
+var2 <- var(morel[morel$group == 2, -1])
+var3 <- var(morel[morel$group == 3, -1])
+
+lower_limit_1v2_unpool <- (xbar1 - xbar2) - c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+upper_limit_1v2_unpool <- (xbar1 - xbar2) + c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+
+lower_limit_1v3_unpool <- (xbar1 - xbar3) - c_bon * sqrt(diag(var1) / n1 + diag(var3) / n3)
+upper_limit_1v3_unpool <- (xbar1 - xbar3) + c_bon * sqrt(diag(var1) / n1 + diag(var3) / n3)
+
+lower_limit_2v3_unpool <- (xbar2 - xbar3) - c_bon * sqrt(diag(var2) / n2 + diag(var3) / n3)
+upper_limit_2v3_unpool <- (xbar2 - xbar3) + c_bon * sqrt(diag(var2) / n2 + diag(var3) / n3)
+
+rbind(lower_limit_1v2_unpool, upper_limit_1v2_unpool,
+      lower_limit_1v3_unpool, upper_limit_1v3_unpool,
+      lower_limit_2v3_unpool, upper_limit_2v3_unpool)
+```
+
+## Exercise 2
+
+```{r}
+# Compute sample sizes and number of variables
+n1 <- nrow(morel[morel$group == 1, -1])
+n2 <- nrow(morel[morel$group == 2, -1])
+n3 <- nrow(morel[morel$group == 3, -1])
+p <- ncol(morel[, -1])
+g <- 3
+
+# Enter the confidence level
+level <- 0.95
+
+# Compute Bonferroni Confidence Intervals for each student population
+m <- p * g * (g - 1) / 2  # p dimensions, g (g-1) / 2 combinations (choose 2 out of g)
+levelb <- 1 - ((1 - level) / (2 * m))
+df <- n1 + n2 + n3 - g
+c_bon <- qt(levelb, df)
+
+# Compute Bonferroni limits
+xbar1 <- colMeans(morel[morel$group == 1, -1])
+xbar2 <- colMeans(morel[morel$group == 2, -1])
+xbar3 <- colMeans(morel[morel$group == 3, -1])
+
+
+
+# 2. Or use individual covariance matrix instead of pooled sample covariance matrix
+var1 <- var(morel[morel$group == 1, -1])
+var2 <- var(morel[morel$group == 2, -1])
+var3 <- var(morel[morel$group == 3, -1])
+
+lower_limit_1v2_unpool <- (xbar1 - xbar2) - c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+upper_limit_1v2_unpool <- (xbar1 - xbar2) + c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+
+lower_limit_1v3_unpool <- (xbar1 - xbar3) - c_bon * sqrt(diag(var1) / n1 + diag(var3) / n3)
+upper_limit_1v3_unpool <- (xbar1 - xbar3) + c_bon * sqrt(diag(var1) / n1 + diag(var3) / n3)
+
+lower_limit_2v3_unpool <- (xbar2 - xbar3) - c_bon * sqrt(diag(var2) / n2 + diag(var3) / n3)
+upper_limit_2v3_unpool <- (xbar2 - xbar3) + c_bon * sqrt(diag(var2) / n2 + diag(var3) / n3)
+
+rbind(lower_limit_1v2_unpool, upper_limit_1v2_unpool,
+      lower_limit_1v3_unpool, upper_limit_1v3_unpool,
+      lower_limit_2v3_unpool, upper_limit_2v3_unpool)
+
+
+```
+
+
+p-value (0.02977) < 0.05, so use individual covariance.
+
+no significant difference of 4 variables between group 1 and group3.
+
+Aptitude: group1 is significantly smaller than group2. group2 is significantly greater than group3.
+
+Language: group1 is significantly smaller than group2. group2 is significantly greater than group3.
+
+Gen_know: no significant difference between group1 and group2. no significant difference between group2 and group3.
+
+## 100k road race data (PCA)
+```{r}
+race100 <- read.csv("race100k.csv", check.names = F)
+str(race100)
+head(race100)
+p1 <- ncol(race100)
+p <- p1 - 1
+
+library(GGally)
+ggpairs(race100[, c(1, 2, 6, 10, 11)], lower = list(continuous = "smooth"))
+```
+
+## Exercise 3
+
+```{r}
+race100 <- read.csv("race100k.csv", check.names = F)
+str(race100)
+head(race100)
+p1 <- ncol(race100)
+p <- p1 - 1
+
+library(GGally)
+ggpairs(race100[, c(1, 2, 6, 10, 11)], lower = list(continuous = "smooth"))
+```
+
+It looks like the variables are the least dependent on age, with very low correlations between age and each of the other variables.
+
+
+## PCA from covariance matrix
+```{r}
+race100 <- read.csv("race100k.csv", check.names = F)
+str(race100)
+head(race100)
+p1 <- ncol(race100)
+p <- p1 - 1
+
+race.pc <- prcomp(race100[, -p1])
+race.pc$sdev      # variation explained by each PC
+race.pc$rotation  # PC direction
+summary(race.pc)
+
+# Screen plot
+qplot(1:p, race.pc$sdev ^ 2, geom = c("point", "line"),
+      xlab = "Component Number", ylab = "Component Variance (eigenvalue)", main = "Scree Diagram")
+# Scatterplot of the first 3 PC scores
+ggpairs(data.frame(race.pc$x[, 1:3]))
+```
+
+
+
+## Exercise 4
+
+```{r}
+race.pc <- prcomp(race100[, -p1])
+race.pc$sdev      # variation explained by each PC
+race.pc$rotation  # PC direction
+summary(race.pc)
+
+# Screen plot
+qplot(1:p, race.pc$sdev ^ 2, geom = c("point", "line"),
+      xlab = "Component Number", ylab = "Component Variance (eigenvalue)", main = "Scree Diagram")
+# Scatterplot of the first 3 PC scores
+ggpairs(data.frame(race.pc$x[, 1:3]))
+```
+
+- PC1: average time (overall performance). If PC1 is large, the runner is slow.
+
+- PC2: change in time between last 2 segments and first 6 segments. If PC2 is large, the runner runs fast at the beginning and slow at the end. 
+
+- PC3: change in time between start+end and middle. Larger PC3 means the runner is slower at the beginning and the end than the middle of the race.
+
+
+## Exercise 5
+```{r}
+pc.var = race.pc$sdev ^ 2
+pc.var
+cumsum(pc.var[1:3])
+```
+
+Variation explained by 10 PCs are: 735.682258, 98.484240, 53.258375, 37.245600, 26.032570,  17.237726,  8.033259, 4.247482, 2.393935, and 1.290086
+
+cumulative variation explained by the first 3 PCs are: 735.6823, 834.1665, and 887.4249.
+
+## PCA from correlation matrix
+```{r}
+# Standardize the data
+races <- scale(race100, center = T, scale = T)
+ggpairs(data.frame(races[, c(1, 2, 6, 10, 11)]), lower = list(continuous = "smooth"))
+
+races.pcor <- prcomp(races[, -p1])
+races.pcor$sdev
+summary(races.pcor)
+qplot(1:p, races.pcor$sdev ^ 2, geom = c("point", "line"),
+      xlab = "Component Number", ylab = "Component Variance (eigenvalue)", main = "Scree Diagram")
+```
+
+## Exercise 6
+```{r}
+# Scatterplot of the first 2 PC scores, colored by mature (age <= 40) or senior (age > 40)
+race.type <- ifelse(race100[, p1] > 40, "S", "M")
+qplot(race.pc$x[, 1], race.pc$x[, 2], color = race.type, label = race.type, geom = "text",
+      show.legend = F, xlab = "PC1: Overall time", ylab = "PC2: Change in time")
+```
+
+Overall, it looks like the seniors have smaller PC1 as well as having both a more consistent PC2 and a smaller PC2. This means you could separate them because each group has distinct behavior in each of the PCs.
+
+

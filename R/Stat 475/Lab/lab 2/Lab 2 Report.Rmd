@@ -1,0 +1,179 @@
+---
+title: "lab 2 Report"
+output: html_document
+---
+Benjamin Porter
+
+
+```{r}
+tips <- read.csv("http://www.ggobi.org/book/data/tips.csv")
+Ames <- read.csv("Ameshousing.csv", stringsAsFactors = T)
+head(Ames)
+dim(Ames)
+```
+
+## Exercise 1
+(a)
+```{r}
+dim(Ames)
+```
+168
+
+(b)
+```{r}
+names(Ames)
+```
+
+## Exercise 2
+(a)
+```{r}
+LivingArea_median = median(Ames$LivingArea)
+LivingArea_median
+LivingArea_mean = mean(Ames$LivingArea)
+LivingArea_mean
+LivingArea_std = sd(Ames$LivingArea)
+LivingArea_std
+n = length(Ames$LivingArea)
+n
+stderr_LivingArea = LivingArea_std / sqrt(n)
+stderr_LivingArea
+
+
+```
+
+(b)
+```{r}
+Ames$LivingArea
+tapply(Ames$LivingArea, Ames$Neighborhood, median)
+tapply(Ames$LivingArea, Ames$Neighborhood, mean)
+LivingArea_sd1 <- tapply(Ames$LivingArea, Ames$Neighborhood, sd)
+LivingArea_sd1
+samplesizes1 <- tapply(Ames$LivingArea, Ames$Neighborhood, length)
+samplesizes1
+LivingArea_sderr1 <- LivingArea_sd1 / sqrt(samplesizes1)
+LivingArea_sderr1
+
+
+```
+
+(c)
+```{r}
+Ames1 = Ames[Ames$LivingArea < 1800, ]
+nrow(Ames1)
+mean(Ames1$SalePrice)
+sd(Ames1$SalePrice) / sqrt(length(Ames1$SalePrice))
+```
+
+(d)
+```{r}
+Ames2 = Ames[Ames$LivingArea < 2000, ]
+nrow(Ames2)
+mean(Ames2$SalePrice)
+sd(Ames2$SalePrice) / sqrt(length(Ames2$SalePrice))
+```
+
+(e)
+```{r}
+tapply(Ames1$SalePrice, Ames1$Neighborhood, median)
+tapply(Ames1$SalePrice, Ames1$Neighborhood, mean)
+tapply(Ames1$SalePrice, Ames1$Neighborhood, sd) / sqrt(tapply(Ames1$SalePrice, Ames1$Neighborhood, length))
+
+```
+
+
+## Exercise 3
+(a)
+```{r}
+library(ggplot2)
+
+lm(SalePrice ~ LivingArea, data = Ames)
+ggplot(Ames, aes(x = LivingArea, y = SalePrice)) +
+  geom_point() +
+  geom_smooth() +
+  geom_abline(intercept = -21769.1, slope = 159.5, col = "red") +
+  labs(x = "Living Area", y = "Sale Price", title = "Sale Price Vs. Living Area")
+
+```
+As living area increases, the mean of the sale price increases.
+
+(b)
+As the living area increases, the variance of the sale price increases.
+
+## Exercise 4
+(a)
+```{r}
+Ames$pricesqft <- Ames$SalePrice / Ames$LivingArea
+
+ggplot(Ames, aes(x = pricesqft)) +
+  geom_histogram() +
+  labs(x = "Price per sq. foot of Living Area")
+```
+bimodal, right-skewed, and centered around 150, majority is 100-200.
+
+(b)
+```{r}
+ggplot(Ames, aes(x = pricesqft)) +
+  geom_histogram(binwidth = 20) +
+  labs(x = "Price per sq. foot of Living Area")
+```
+
+
+## Exercise 5
+(a)
+
+```{r}
+ggplot(Ames, aes(x = LivingArea, y = SalePrice)) +
+  geom_point() +
+  geom_smooth() +
+  facet_grid(. ~ Neighborhood)
+```
+Positive relationship between Living Area and Sale Price for all 3 neighborhoods.
+
+Strong linearity in CollCr and NridgHt.
+
+
+(b)
+
+```{r}
+ggplot(Ames, aes(x = Neighborhood, y = pricesqft)) +
+  geom_boxplot()
+```
+Glibert lowest center, then Collgcr, NridgHt.
+CollgCr has largest IQR, followed by NridgHt, then Gilbert
+CollgCr is skewed to the right.
+
+
+(c)
+
+```{r}
+ggplot(Ames, aes(x = Neighborhood, y = LotArea)) +
+  geom_boxplot()
+
+```
+Glibert lowest center, then Collgcr, NridgHt.
+NridgHt has largest IQR, followed by Gilbert, then CollgCr.
+Gilbert is skewed to the right.
+
+
+## Exercise 6
+(a)
+Positive relationship in all pairs.
+Strong correlation between SalePrice and LivingArea, SalePrice and Garage.
+Weak correlation between SalePrice and Bedroom, Bedroom and GarageArea.
+```{r}
+AmesX = Ames[, 1:5]
+cor(AmesX)
+```
+
+
+(b)
+You can see Bedroom is a discrete variable.
+You can see the variance increase on the scatterplots.
+You can also see that general shape of the relationship between each of the variables.
+
+
+```{r}
+library(GGally)
+ggpairs(AmesX)
+```
+

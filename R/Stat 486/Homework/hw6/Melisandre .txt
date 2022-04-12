@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/743
+id: 743
+name: Melisandre
+gender: Female
+culture: Asshai
+born: At Unknown
+died: 
+alive: TRUE
+titles: 
+aliases: The Red Priestess, The Red Woman, The King's Red Shadow, Lady Red, Lot Seven
+father: 
+mother: 
+spouse: 
+allegiances: 
+books: A Clash of Kings, A Storm of Swords, A Feast for Crows
+povBooks: A Dance with Dragons
+tvSeries: Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Carice van Houten

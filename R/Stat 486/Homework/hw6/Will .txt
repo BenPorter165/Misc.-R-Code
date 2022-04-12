@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1109
+id: 1109
+name: Will
+gender: Male
+culture: 
+born: 
+died: In 297 AC, at Haunted Forest
+alive: FALSE
+titles: 
+aliases: 
+father: 
+mother: 
+spouse: 
+allegiances: 
+books: A Clash of Kings
+povBooks: A Game of Thrones
+tvSeries: 
+playedBy: Bronson Webb

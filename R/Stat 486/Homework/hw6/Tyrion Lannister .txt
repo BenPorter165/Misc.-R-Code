@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1052
+id: 1052
+name: Tyrion Lannister
+gender: Male
+culture: 
+born: In 273 AC, at Casterly Rock
+died: 
+alive: TRUE
+titles: Acting Hand of the King (former), Master of Coin (former)
+aliases: The Imp, Halfman, The boyman, Giant of Lannister, Lord Tywin's Doom, Lord Tywin's Bane, Yollo, Hugor Hill, No-Nose, Freak, Dwarf
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/2044
+allegiances: House Lannister of Casterly Rock
+books: A Feast for Crows, The World of Ice and Fire
+povBooks: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Peter Dinklage

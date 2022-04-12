@@ -1,0 +1,340 @@
+---
+title: "Homework 2 report"
+author: "Ben Porter"
+date: "9/29/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Question 1:
+
+a.
+```{r}
+library(Rcpp)
+library(biotools)
+library(ggplot2)
+library(GGally)
+library(reshape2)
+library(mvShapiroTest)
+library(DescTools)
+cork = read.csv("D:/school/Stat/Stat 475/Homework 2/cork.csv")
+
+
+cork1 = cork[2:5]
+colMeans(cork1)
+```
+
+b.
+```{r}
+boxplot(cork1)
+```
+
+The boxplots suggest slight differences. While the boxplots show very similar distributions, X1(North) looks to have a slightly higher average and distribution than the others, as well as X3(South) has the largest range/most variability followed by X4(West), then X1(North), and then X2(East).
+
+c.
+```{r}
+cor(cork1)
+
+ggpairs(cork1)
+```
+
+All correlations are positive and strong. The scatterplot matrix shows a positive linear trend between each of the variables.
+
+d.
+```{r}
+ggplot(melt(cork, id.vars = 1, measure.vars = 2:5), aes(sample = value)) +
+  geom_qq() +
+  geom_qq_line() +
+  facet_wrap(~ variable, scales = "free", nrow = 2)
+
+# Univariate Shapiro-Wilk test
+apply(cork1, 2, shapiro.test)
+
+# Multivariate Shapiro-Wilk test
+mvShapiro.Test(as.matrix(cork1))
+```
+
+X3(South)(p-value 0.007059 < 0.05) rejects H0. X3(South) is not a normal distribution based on the univariate Shapiro-Wilk test. The QQ plot of X3 also supports non-normality.
+
+X1(North)(p-value 0.0179 > 0.05), X2(East)(p-value 0.01351 > 0.05), and X4(West)(p-value 0.1185 > 0.05) cannot reject H0. X1(North), X2(East), and X4(West) are from normal distributions based on the univariate Shapiro-Wilk test. The QQ plots of X1, X2, and X4 also support normality.
+
+The multivariate Shapiro-Wilk test(p-value 0.03314 < 0.05) rejects H0. This means the data is not from a 4d normal distribution.
+
+e.
+```{r}
+HotellingsT2Test(cork1, mu = c(47, 47, 47, 47), test = "f")
+
+T2 = (6.3892*(4*(28 - 1)))/(28-4)
+T2
+```
+
+Scaled T2 = 6.3892
+
+T2 = 28.7514
+
+Degrees of Freedom of 4 and 24
+
+p-value = 0.001197 < 0.05, reject H0. The population means of X1, X2, X3, and X4 are not equal to 47.
+
+f.
+```{r}
+HotellingsT2Test(cork1, test = "f")
+T2b = (72.485*(4*(28 - 1)))/(28-4)
+T2b
+```
+
+Scaled T2 = 72.485
+
+T2 = 326.1825
+
+Degrees of Freedom of 4 and 24
+
+p-value = 4.814e-13 < 0.05, reject H0. The population means of X1, X2, X3, and X4 are not equal to each other.
+
+g.
+```{r}
+TB.conf.int <- function(X, level = 0.95)
+{ 
+  # Convert X to a matrix, if it is not a matrix already, from
+  # vectors or data frames.
+  X <- as.matrix(X)
+  
+  # Set n to the number of observations, p to the number of variables.
+  n <- nrow(X)
+  p <- ncol(X)
+  
+  # Stop if arguments are invalid.
+  if (!is.numeric(X))
+  {
+    stop("Data must be numeric")
+  }
+  
+  if (n < p)
+  {
+    stop("Must have at least as many observations as variables")
+  }
+  
+  if (!is.numeric(level) || length(level) != 1 || level <= 0 || level >= 1)
+  {
+    stop("Confidence level must be between 0 and 1")
+  }
+  
+  # Create a matrix A in which each column represents
+  # a difference between two pairs of means
+  np <- p * (p - 1) / 2
+  A <- matrix(c(0), ncol = np, nrow = p)
+  nc <- 0
+  for (i in 1:(p - 1)) {
+    for (j in 1:(p - i)) {
+      A[i, nc + j] <- 1
+      A[i + j, nc + j] <- -1
+    }
+    nc <- nc + (p - i)
+  }
+  
+  # Create a matrix that will hold the confidence intervals.
+  CI <- matrix(NA, 2, ncol(A))
+  rownames(CI) <- c("lower", "upper")
+  colnames(CI) <- colnames(A)
+  
+  CIB <- matrix(NA, 2, ncol(A))
+  rownames(CIB) <- c("lower", "upper")
+  colnames(CIB) <- colnames(A)
+  
+  CIT <- matrix(NA, 2, ncol(A))
+  rownames(CIT) <- c("lower", "upper")
+  colnames(CIT) <- colnames(A)
+  
+  # Find F distribution quantile for T-squared confidence intervals.
+  F <- qf(level, p, n - p)
+  
+  # Find t distribution percentile for Bonferroni confidence intervals
+  alpha <- (1 - level) / 2 / ncol(A)
+  levelB <- 1 - alpha 
+  tB <- qt(levelB, n - 1)
+  t <- qt(1 - (1 - level) / 2, n - 1)
+  
+  # Compute the sample covariance matrix of the original variables.
+  C <- cov(X)
+  
+  # Find the confidence intervals for the specified linear combinations.
+  for (i in 1:ncol(A))
+  { 
+    # Find the sample mean and variance of this linear combination.
+    m <- mean(X %*% A[, i])
+    v <- t(A[, i]) %*% C %*% A[, i]
+    
+    # Find the confidence interval for this difference.
+    CI[1, i] <- m - sqrt((p * (n - 1) / n / (n - p)) * F * v)
+    CI[2, i] <- m + sqrt((p * (n - 1) / n / (n - p)) * F * v)
+    
+    CIB[1, i] <- m - tB * sqrt(v / n)
+    CIB[2, i] <- m + tB * sqrt(v / n)
+    
+    CIT[1, i] <- m - t * sqrt(v / n)
+    CIT[2, i] <- m + t * sqrt(v / n)
+  }
+  
+  # Print the confidence intervals.
+  cat(" T-squared simultaneous confidence intervals: \n\n")
+  print(CI)
+  
+  cat("\n\n Bonferroni simultaneous confidence intervals: \n\n")
+  print(CIB)
+  
+  cat("\n\n One-at-a-Time t confidence intervals: \n\n")
+  print(CIT)
+}
+
+TB.conf.int(cork1)
+
+```
+
+According to the Bonferroni simultaneous confidence intervals:
+
+μ1 > μ2
+
+μ1 > μ4
+
+μ3 > μ4
+
+No significant difference between μ1 and μ3, μ2 and μ3, and μ2 and μ4.
+
+On average, the North side(X1) has thicker cork deposits than both the East side(X2) and the West side(X4). Also, the South side(X3) has thicker cork on average than the West side(X4).
+
+Question 2:
+
+a.
+```{r}
+bnotes = read.csv("D:/school/Stat/Stat 475/Homework 2/bnotes.csv")
+bnotes1 = bnotes[2:7]
+
+# Univariate Shapiro-Wilk test
+apply(bnotes1, 2, shapiro.test)
+```
+
+Value of W:
+
+X1 = 0.98374
+
+X2 = 0.96431
+
+X3 = 0.96637
+
+X4 = 0.97338
+
+X5 = 0.97456
+
+X6 = 0.95878
+
+p-value:
+
+X1 = 0.2567
+
+X2 = 0.008254
+
+X3 = 0.01174
+
+X4 = 0.04035
+
+X5 = 0.04984
+
+X6 = 0.003295
+
+X2(p-value 0.008254 < 0.05), X3(p-value 0.01174 < 0.05), X4(p-value 0.04035 < 0.05), X5(p-value 0.04984 < 0.05), and X6(p-value 0.003295 < 0.05) rejects H0. X2, X3, X4, X5, and X6 are not normal distributions based on the univariate Shapiro-Wilk test.
+
+X1(p-value 0.2567 > 0.05) cannot reject H0. X1 is from a normal distributions based on the univariate Shapiro-Wilk test.
+
+All of the QQ plots are relatively straight lines, implying normality based on these plots.
+
+b.
+```{r}
+# Multivariate Shapiro-Wilk test
+mvShapiro.Test(as.matrix(bnotes1))
+```
+
+The Multivariate Shapiro-Wilk test(p-value 0.02399 < 0.05) rejects H0. This means the data is not from a 6-dimensional normally distributed model according to this test.
+
+c.
+```{r}
+S = cov(bnotes1)
+Sinverse = solve(S)
+
+xbar = as.matrix(colMeans(bnotes1))
+x1 = c(214.9, 130.5, 130.2, 8.4, 11.6, 138.4)
+diff1 = x1 - xbar
+dsquared1 = (100/101)*t(diff1) %*% Sinverse %*% diff1
+dsquared1
+dchisq(dsquared1, 6)
+
+x2 = c(215.9, 129.5, 130.6, 7.9, 12.1, 140.8)
+diff2 = x2 - xbar
+dsquared2 = (100/101)*t(diff2) %*% Sinverse %*% diff2
+dsquared2
+dchisq(dsquared2, 6)
+
+
+x3 = c(215.3, 130.7, 130.6, 8.1, 11.7, 142.4)
+diff3 = x3 - xbar
+dsquared3 = (100/101)*t(diff3) %*% Sinverse %*% diff3
+dsquared3
+dchisq(dsquared3, 6)
+
+
+x4 = c(214.9, 130.1, 129.8, 8.7, 10.9, 141.8)
+diff4 = x4 - xbar
+dsquared4 = (100/101)*t(diff4) %*% Sinverse %*% diff4
+dsquared4
+dchisq(dsquared4, 6)
+
+
+x5 = c(215.9, 131.3, 129.2, 8.5, 11.5, 138.4)
+diff5 = x5 - xbar
+dsquared5 = (100/101)*t(diff5) %*% Sinverse %*% diff5
+dsquared5
+dchisq(dsquared5, 6)
+```
+
+Bank note #1:
+
+D squared = 49.43481
+
+P(D squared = 49.43481) = 2.813931e-09
+
+Bank note #2:
+
+D squared = 43.09305
+
+P(D squared = 43.09305) = 5.095149e-08
+
+Bank note #3:
+
+D squared = 21.44749
+
+P(D squared = 21.44749) = 0.0006329496
+
+Bank note #4:
+
+D squared = 7.322699
+
+P(D squared = 7.322699) = 0.08612287
+
+Bank note #5:
+
+D squared = 86.53376
+
+P(D squared = 86.53376) = 7.580258e-17
+
+I would determine that bank notes 1, 2, 3, and 5 are forgeries, as their p-values are much too small to be genuine.
+
+Bank note 4 could possibly be a genuine bank note. Bank note 4 has a p-value of 0.08612287 which is possible with a sample size of 100 we would expect(100 * 0.08612287) 8.61 notes with this d squared.
+
+
+
+
+

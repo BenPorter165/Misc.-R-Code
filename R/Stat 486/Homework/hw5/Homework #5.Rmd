@@ -1,0 +1,305 @@
+---
+title: 'Homework #5'
+author: "Ben Porter"
+date: "2/28/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+# a.
+```{r}
+#i.
+n <- 100
+sum1 <- vector("numeric", n)
+for (i in 1:n) {
+  sum1[i] <- 1/i
+}
+sum(sum1)
+
+x <- matrix(1:n, 1, n)
+sum(1/x)
+
+#ii.
+n <- 10000000
+summation1a <- function(n) {
+  sum1 <- vector("numeric", n)
+  for (i in 1:n) {
+    sum1[i] <- 1/i
+    }
+  sum(sum1)
+}
+
+summation1b <- function(n) {
+  x <- matrix(1:n, 1, n)
+  sum(1/x)
+  }
+
+system.time(summation1a(n))
+system.time(summation1b(n))
+```
+
+# b.
+```{r}
+#i.
+m <- 50
+n <- 100
+
+a <- matrix(, n, m)
+for(i in 1:n){
+  for(j in 1:m){
+    a[i, j] = -(i * j)
+  }
+}
+sum(2^a)
+
+b <- (matrix(1:n, n, m) * matrix(1:m, n, m, byrow=TRUE))
+c <- matrix(2^(-b), n, m)
+sum(c)
+
+#ii.
+n <- 1000
+m <- 500
+summation2a <- function(n, m) {
+  a <- matrix(, n, m)
+  for(i in 1:n){
+    for(j in 1:m){
+      a[i, j] = -(i * j)
+    }
+    }
+  sum(2^a)
+  }
+
+summation2b <- function(n, m) {
+  b <- (matrix(1:n, n, m) * matrix(1:m, n, m, byrow=TRUE))
+  c <- matrix(2^(-b), n, m)
+  sum(c)
+}
+system.time(summation2a(n, m))
+system.time(summation2b(n, m))
+
+```
+
+# c.
+```{r}
+cutoff <- 11.5
+total <- 0
+guess <- 1
+while(total < cutoff){
+ total <- total + (1/guess)
+ guess <- guess + 1
+}
+print(guess)
+
+
+
+n <- 1000
+sum(1/1:n)
+
+n <- 10000
+sum(1/1:n)
+
+n <- 100000
+sum(1/1:n)
+
+
+```
+
+# d.
+```{r}
+library(stringr)
+string <- "Hello, Iowa. Congratulations to the Iowa hawkers. That was a big win today. I’m thrilled to be back. That was a big win. But I am thrilled to be back especially on such great news as that, that was a big one. You’ve been a great school, a great team, a great tradition, really an amazing job and it all started right here and we’re going to keep it here. Number one, right? We’re going to keep it here. The fairgrounds so they broke the record tonight in the history of the fairgrounds. I don’t know how old it is, but in the history of the fairgrounds, this is the most people they’ve had. So thank you very much."
+
+a <- 1
+repeat {
+if(str_sub(string, start = a, end = a + 4) == "great") {
+  break
+  }
+  a <- a+1
+  }
+a
+```
+
+## Question 3
+```{r}
+mymedian <- function(x, na.rm=FALSE) {
+  if(length(x) %% 2 == 0){
+    median1 <- (x[length(x)/2] + x[length(x)/2 + 1])/2
+    return(median1)
+  }
+  else{
+    median1 <- (x[(length(x)/2 + 0.5)])
+  }
+  return(median1)
+}
+
+```
+
+## Question 4
+# a.
+```{r}
+sign <- function(x) {
+  if(x > 0){
+    return(1)
+  }
+  else if(x == 0){
+    return(0)
+  }
+  else if(x < 0){
+    return(-1)
+  }
+}
+
+fp <- function(x, p = 2, deriv = FALSE) {
+  
+  
+  if(deriv == FALSE){
+    return(abs(x)^p)
+  }
+  else if(deriv == TRUE){
+    if(p > 1){
+      return(p * abs(x)^(p-1) * sign(x))
+    }
+    else if(p == 1){
+      return(sign(x))
+    }
+  }
+  
+}
+
+```
+
+# b.
+```{r}
+#i.
+library(testthat)
+f <- c(1:5)
+fp(f)
+expect_equal(length(f), length(fp(f)))
+
+#ii.
+expect_equal(fp(f, p = 2), f^2)
+
+#iii.
+expect_equal(fp(f, p = 1), abs(f))
+
+#iv.
+expect_equal(fp(f, p = 2, deriv = TRUE), 2 * f)
+
+#v.
+expect_equal(fp(f, p = 1, deriv = TRUE), sign(f))
+
+#vi.
+expect_equal(length(fp(vector("numeric", 0))), length(vector("numeric", 0)))
+
+```
+
+# c.
+```{r}
+test_that("Tests for fp function", {
+  expect_equal(length(f), length(fp(f)))
+  expect_equal(fp(f, p = 2), f^2)
+  expect_equal(fp(f, p = 1), abs(f))
+  expect_equal(fp(f, p = 2, deriv = TRUE), 2 * f)
+  expect_equal(fp(f, p = 1, deriv = TRUE), sign(f))
+  expect_equal(length(fp(vector("numeric", 0))), length(vector("numeric", 0)))})
+
+
+```
+
+## Question 5
+```{r}
+X <- cars$speed
+tolerance <- 0.00005
+
+x <- 0
+k <- 1
+kmax<-1000
+
+gxprime <- 2 * mean(x - X, na.rm = TRUE)
+while(abs(gxprime) >= tolerance){
+  x[k + 1] <- x[k] - (.99^k)*gxprime
+  
+  gxprime <- 2 * mean(x[k] - X, na.rm = TRUE)
+  k = k + 1
+  if(k == kmax){
+  break
+  }
+}
+return(x[k])
+
+```
+
+# Question 6
+```{r}
+X <- cars$speed
+
+descent <- function(X, tolerance, kmax){
+  x <- c(0)
+  k <- 1
+  gxprime <- 2 * mean(x - X, na.rm = TRUE)
+  while(abs(gxprime) >= tolerance){
+    x[k + 1] <- x[k] - (.99^k)*gxprime
+    
+    k = k + 1
+    gxprime <- 2 * mean(x[k] - X, na.rm = TRUE)
+
+    if(k == kmax){
+    break
+    }
+  }
+  return(x[k])
+  }
+descent(X, 0.00005, 1000)
+
+dat <- c(1, 2, 3, 5, 10000)
+
+test_that("Tests for descent function", {
+expect_equal(descent(dat, 0.00005, 1000), mean(dat), tolerance = .1)
+expect_equal(descent(dat, 0.00005, 100), mean(dat), tolerance = .1)
+expect_equal(descent(dat, 0.05, 1000), mean(dat), tolerance = .1)
+})
+
+```
+
+## Question 8
+```{r}
+# Calculate the mean of a dataset using the gradient descent algorithm.
+#
+# X: A data vector
+# tolerance: Tolerance level for the absolute value of the first derivative of the gradient descent algorithm.
+# kmax: The max number of iterations the algorithm can try.
+#
+# Returns the mean value of the data vector that was calculated.
+
+descent <- function(X, tolerance, kmax){
+  x <- c(0)
+  k <- 1
+  gxprime <- 2 * mean(x - X, na.rm = TRUE)
+  while(abs(gxprime) >= tolerance){
+    x[k + 1] <- x[k] - (.99^k)*gxprime
+    
+    k = k + 1
+    gxprime <- 2 * mean(x[k] - X, na.rm = TRUE)
+
+    if(k == kmax){
+    break
+    }
+  }
+  return(x[k])
+  }
+```
+
+
+
+
+
+
+
+
+
+
+

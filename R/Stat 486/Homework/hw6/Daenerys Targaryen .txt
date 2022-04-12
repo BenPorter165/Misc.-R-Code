@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1303
+id: 1303
+name: Daenerys Targaryen
+gender: Female
+culture: Valyrian
+born: In 284 AC, at Dragonstone
+died: 
+alive: TRUE
+titles: Queen of the Andals and the Rhoynar and the First Men, Lord of the Seven Kingdoms, Khaleesi of the Great Grass Sea, Breaker of Shackles/Chains, Queen of Meereen, Princess of Dragonstone
+aliases: Dany, Daenerys Stormborn, The Unburnt, Mother of Dragons, Mother, Mhysa, The Silver Queen, Silver Lady, Dragonmother, The Dragon Queen, The Mad King's daughter
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/1346
+allegiances: House Targaryen of King's Landing
+books: A Feast for Crows
+povBooks: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Emilia Clarke

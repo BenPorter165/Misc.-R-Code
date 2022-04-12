@@ -1,0 +1,194 @@
+---
+title: "Lab10"
+author: "Yang Qiao"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Insect Community Data
+```{r}
+pbi <- read.csv("newpbi.csv")
+dim(pbi)
+colnames(pbi)
+head(pbi[, c(1, 2, 5:16)])
+```
+
+## Hierarchical Clustering
+```{r}
+library(ggplot2)
+library(GGally)
+library(fpc)
+library(vegan)
+
+?hclust
+```
+
+## Dissimilarity Indices for Community Ecologists
+```{r}
+?vegdist
+```
+
+## Distances
+```{r}
+pbi.euc.dist <- vegdist(pbi[, 5:16], method = "euclidean")
+pbi.canb.dist <- vegdist(pbi[, 5:16], method = "canberra")
+pbi.bray.dist <- vegdist(pbi[, 5:16], method = "bray")
+pbi.cao.dist <- vegdist(pbi[, 5:16], method = "cao")
+ggpairs(as.data.frame(cbind(pbi.euc.dist, pbi.canb.dist, pbi.bray.dist, pbi.cao.dist)))
+```
+
+## Exercise 1
+
+Bray has a higher correlation with the Canberra distance, so Bray distance is closer to the Canberra distance than the Euclidean distance.
+
+## Apply Wards Method
+```{r}
+# library(ggdendro)
+
+# Wards method with the Canberra distance
+pbi.canb.clust <- hclust(pbi.canb.dist, method = "ward.D2")
+plot(pbi.canb.clust, cex = 0.5)
+# ggdendrogram(pbi.canb.clust)  # ggplot version
+
+# Wards method with the Euclidean distance 
+pbi.euc.clust <- hclust(pbi.euc.dist, method = "ward.D2")
+plot(pbi.euc.clust, cex = 0.5)
+# ggdendrogram(pbi.canb.clust)  # ggplot version
+
+# Create five clusters for each method
+pbi$cl.canb <- cutree(pbi.canb.clust, 5)
+pbi$cl.euc <- cutree(pbi.euc.clust, 5)
+cluster_membership <- cbind(pbi$cl.canb, pbi$cl.euc)
+rownames(cluster_membership) <- pbi[, 1]
+cluster_membership
+table(pbi$cl.canb, pbi$cl.euc)
+```
+
+## Display Clusters
+```{r}
+# Plot the clusters made with the Canberra distance measure using principal component scores.
+pbi.pca <- prcomp(pbi[, 5:16], scale. = T, retx = T)
+summary(pbi.pca)
+qplot(PC1, PC2, color = cls, data = data.frame(pbi.pca$x, cls = as.factor(pbi$cl.canb)))
+cor(pbi[, 5:16], pbi.pca$x[, 1:3])
+
+# Plot the clusters using scores for canonical discriminants
+plotcluster(pbi[, 5:16], pbi$cl.canb, method = "dc", cex = 1.2, pch = 16)
+# data.frame(discrproj(pbi[, 5:16], pbi$cl.canb, method = "dc")$proj, cls = as.factor(pbi$cl.canb)) %>%
+#   qplot(X1, X2, color = cls, data = .)  # ggplot version
+```
+
+## Choose Number of Clusters
+```{r}
+# Plot within/between ratios against number of clusters
+pbi.canb.ratio <- sapply(2:10, function(x) {
+  cluster.stats(pbi.canb.dist, clustering = cutree(pbi.canb.clust, x))$wb.ratio
+})
+qplot(2:10, pbi.canb.ratio, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "Within/Between Ratio", main = "Canberra Distance (Ward's Method)")
+
+# Plot Calinski-Harabasz index against number of clusters
+pbi.canb.ch <- sapply(2:10, function(x) {
+  cluster.stats(pbi.canb.dist, clustering = cutree(pbi.canb.clust, x))$ch
+})
+qplot(2:10, pbi.canb.ch, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "ch Index", main = "Canberra Distance (Ward's Method)")
+```
+
+## Exercise 2
+```{r}
+# Plot within/between ratios against number of clusters
+pbi.euc.ratio <- sapply(2:10, function(x) {
+  cluster.stats(pbi.euc.dist, clustering = cutree(pbi.euc.clust, x))$wb.ratio
+})
+qplot(2:10, pbi.euc.ratio, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "Within/Between Ratio", main = "Euclidean Distance (Ward's Method)")
+
+# Plot Calinski-Harabasz index against number of clusters
+pbi.euc.ch <- sapply(2:10, function(x) {
+  cluster.stats(pbi.euc.dist, clustering = cutree(pbi.euc.clust, x))$ch
+})
+qplot(2:10, pbi.euc.ch, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "ch Index", main = "Euclidean Distance (Ward's Method)")
+
+# Display clusters
+pbi$cl.euc <- cutree(pbi.euc.clust, 3)
+qplot(PC1, PC2, color = cls, data = data.frame(pbi.pca$x, cls = as.factor(pbi$cl.euc)))
+data.frame(discrproj(pbi[, 5:16], pbi$cl.euc, method = "dc")$proj, cls = as.factor(pbi$cl.euc)) %>%
+  qplot(X1, X2, color = cls, data = .)
+```
+
+3 is a good number of clusters because it is where the first elbow is located on the Within/Between Ratio vs number of clusters graph.
+
+## K-Means Clustering
+
+## Exercise 3
+```{r}
+set.seed(475)
+pbi.km1 <- kmeans(pbi[, 5:16], 4)
+pbi.km1
+pbi.km1$betweenss / pbi.km1$totss
+
+cluster_membership <- cbind(pbi.km1$cluster, pbi$cl.euc)
+rownames(cluster_membership) <- pbi[, 1]
+cluster_membership
+table(pbi.km1$cluster, pbi$cl.euc)
+```
+
+Groups 2 and 3 are grouped differently and groups 1 and 4 are put in the same group.
+
+## Exercise 4
+```{r}
+set.seed(575)
+pbi.km2 <- kmeans(pbi[, 5:16], 4)
+pbi.km2
+pbi.km2$betweenss / pbi.km2$totss
+
+cluster_membership <- cbind(pbi.km1$cluster, pbi.km2$cluster)
+rownames(cluster_membership) <- pbi[, 1]
+cluster_membership
+table(pbi.km1$cluster, pbi.km2$cluster)
+
+# Plot betweenSS/totalSS ratios against number of clusters
+kmratio <- sapply(2:10, function(x) {
+  pbi.km <- kmeans(pbi[, 5:16], x)
+  pbi.km$betweenss / pbi.km$totss
+})
+qplot(2:10, kmratio, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "betweenSS/totalSS", main = "K-means Clustering")
+
+# Plot the clusters using scores for canonical discriminants
+plotcluster(pbi[, 5:16], pbi.km2$cluster, method = "dc", cex = 1.2, pch = 16)
+# data.frame(discrproj(pbi[, 5:16], pbi.km2$cluster, method = "dc")$proj, cls = as.factor(pbi.km2$cluster)) %>%
+#   qplot(X1, X2, color = cls, data = .)  # ggplot version
+```
+
+They are all grouped similarly, this is different than in Question 3.
+
+## Apply Multi-Dimensional Scaling (MDS)
+```{r}
+D <- vegdist(pbi[, 5:16], method = "euclidean")
+X <- cmdscale(D, k = 9, eig = T)
+X
+
+# Compute the PM1 criteria
+pm1 <- cumsum(abs(X$eig)) / sum(abs(X$eig))
+pm1
+
+qplot(X$points[, 1], X$points[, 2], label = rownames(pbi), geom = "text",
+      xlab = "Coordinate 1", ylab = "Coordinate 2", main = "MDS with Euclidean Distances")
+```
+
+## Exercise 5
+```{r}
+D <- vegdist(pbi[, 5:16], method = "canberra")
+X <- cmdscale(D, k = 9, eig = T)
+
+qplot(X1, X2, color = cls, data = data.frame(X$points, cls = as.factor(pbi$cl.canb)),
+      xlab = "Coordinate 1", ylab = "Coordinate 2", main = "MDS with Canberra Distances")
+```

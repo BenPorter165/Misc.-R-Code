@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1267
+id: 1267
+name: Chett
+gender: Male
+culture: 
+born: At Hag's Mire
+died: In 299 AC, at Fist of the First Men
+alive: FALSE
+titles: 
+aliases: 
+father: 
+mother: 
+spouse: 
+allegiances: 
+books: A Game of Thrones, A Clash of Kings
+povBooks: A Storm of Swords
+tvSeries: 
+playedBy: 

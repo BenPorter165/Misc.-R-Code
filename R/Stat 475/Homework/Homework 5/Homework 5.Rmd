@@ -1,0 +1,474 @@
+---
+title: "Homework 5 Code"
+author: "Ben Porter"
+date: "11/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Due: Sunday Nov 28** 
+
+1. The data "winequality.csv" are related to red and white variants of the Portuguese "Vinho Verde" wine. Due to privacy and logistic issues, only physicochemical (inputs) and sensory (the output) variables are available (e.g. there is no data about grape types, wine brand, wine selling price, etc.). The sample sizes for red and white wine are 1599 and 4898, respectively. The 11 physicochemical variables (based on physicochemical tests) are    
+
+   - fixed acidity
+   - volatile acidity
+   - citric acid
+   - residual sugar
+   - chlorides
+   - free sulfur dioxide
+   - total sulfur dioxide
+   - density
+   - pH
+   - sulphates
+   - alcohol 
+
+There are additional two variables "quality" and "wine type" for the rating (score between 0 and 10) and type of wines. 
+
+ a. Conduct two-sample Hotelling test for whether the 11 physicochemical variables (remove "quality" and "wine type") have the same means for the red and white wines. State the hypotheses, report the statistic and pvalue, explain the result and state the conclusion.
+
+```{r}
+library(ggplot2)
+library(GGally)
+library(mvShapiroTest)
+library(DescTools)
+library(reshape2)
+library(biotools)
+
+
+wine <- read.csv("winequality.csv")
+wine1 = wine[1:11]
+
+winer = wine[wine[,13]=="red", -13]
+winew = wine[wine[,13]=="white", -13]
+
+T2result = HotellingsT2Test(winer[1:11],winew[1:11])
+T2result
+
+T2 = (3387.7*(11*(6496 - 1)))/(6496-11)
+T2
+
+
+```
+
+H0: mu1 = mu2
+
+HA: mu1 =/= mu2
+
+T^2: 37322.16
+
+p-value = 2.2e-16
+
+p-value = 2.2e-16 < 0.05, reject H0. The mean vectors of the 2 kinds of wine are not equal to each other.
+
+
+
+ b. Construct Bonferroni simultaneous confidence intervals for the mean differences of 11 physicochemical variables between red and white wines. Which variables have significant different mean values? 
+
+```{r}
+boxM(wine[1:11], wine$wine.type)
+
+# Compute sample sizes and number of variables
+n1 <- nrow(winer[1:11])
+n2 <- nrow(winew[1:11])
+
+p <- 11
+g <- 2
+
+# Enter the confidence level
+level <- 0.95
+
+# Compute Bonferroni Confidence Intervals for each student population
+m <- p * g * (g - 1) / 2  # p dimensions, g (g-1) / 2 combinations (choose 2 out of g)
+levelb <- 1 - ((1 - level) / (2 * m))
+df <- n1 + n2 - g
+c_bon <- qt(levelb, df)
+
+# Compute Bonferroni limits
+xbar1 <- colMeans(winer[1:11])
+xbar2 <- colMeans(winew[1:11])
+
+# 2. Or use individual covariance matrix instead of pooled sample covariance matrix
+var1 <- var(winer[1:11])
+var2 <- var(winew[1:11])
+
+
+lower_limit_1v2_unpool <- (xbar1 - xbar2) - c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+upper_limit_1v2_unpool <- (xbar1 - xbar2) + c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+
+
+rbind(lower_limit_1v2_unpool, upper_limit_1v2_unpool)
+```
+
+p-value (2.2e-16) < 0.05, so use unpooled covariance.
+
+According to the Bonferroni simultaneous confidence intervals, all of the variables have significantly different mean values because none of the intervals contain 0, although alcohol is very close to containing 0.
+
+
+2. The data "fbi.csv" includes the crime rate per 100,000 population for each state in the U.S. for 7 types of crime at 1966, 1976, 1986, 1996, 2006 and 2016. Answer the following question by R. 
+
+ a. Conduct multivariate Shapiro test for the normality of the crime rates for each of the 6 years. State your conclusion. Is it valid to conduct statistical inference for this data set if normal distribution assumption is not satisfied?
+ 
+```{r}
+fbi <- read.csv("fbi.csv")
+
+unique(fbi$Year)
+
+fbi1 = fbi[fbi[,2]=="1966", -2]
+fbi2 = fbi[fbi[,2]=="1976", -2]
+fbi3 = fbi[fbi[,2]=="1986", -2]
+fbi4 = fbi[fbi[,2]=="1996", -2]
+fbi5 = fbi[fbi[,2]=="2006", -2]
+fbi6 = fbi[fbi[,2]=="2016", -2]
+
+
+mvShapiro.Test(as.matrix(fbi1[3:9]))
+
+mvShapiro.Test(as.matrix(fbi2[3:9]))
+
+mvShapiro.Test(as.matrix(fbi3[3:9]))
+
+mvShapiro.Test(as.matrix(fbi4[3:9]))
+
+mvShapiro.Test(as.matrix(fbi5[3:9]))
+
+mvShapiro.Test(as.matrix(fbi6[3:9]))
+
+```
+ 
+fbi1 p-value: 1.541e-15
+
+fbi2 p-value: 2.2e-16
+
+fbi3 p-value: 3.353e-12
+
+fbi4 p-value: 3.439e-08
+
+fbi5 p-value: 1.945e-12
+
+fbi6 p-value: 2.2e-16
+
+With all p-values < 0.05, we reject the null hypothesis for every year, so each year is not from a multivariate normal distribution.
+
+It is valid to conduct statistical inference on data that does not satisfy the normal distribution assumption, but it should be kept in mind and should be adjusted for when necessary.
+
+
+ b. Let mu1, mu2, . . . , mu6 be the population mean vector (averaging over states) of the crime rates for the 7 types of crime at 1966, 1976, 1986, 1996, 2006 and 2016, respectively. Conduct statistical analysis (MANOVA) to determine whether the crime rates have changed over years. State the hypotheses, report the statistic and pvalue, explain the result and state the conclusion.
+
+```{r}
+library(car)
+
+
+fit.lm <- lm(cbind(Aggravated.assault, Burglary, Larceny.theft, Legacy.rape, Motor.vehicle.theft, Murder, Robbery) ~ Year, data = fbi)
+summary(Manova(fit.lm))
+```
+
+Wilks test statistic: 0.4499826
+
+F: 52.21002
+
+p-value: 2.22e-16
+
+p-value < 0.05, reject H0. At least two groups have different population means between the 7 variables.
+
+
+ c. For the year 2016, conduct principal component analysis to summarize the 7 crime rates into 2 principal scores. Report the variation explained by the first two PC and interpret their meanings. Make a scatter plot of the PC scores for each state, and interpret your PC plot.
+
+```{r}
+fbi6pc <- prcomp(fbi6[3:9], scale = T, center = T)
+summary(fbi6pc)
+
+unique(fbi6[1])
+
+states = c(1:52)
+
+
+qplot(fbi6pc$x[, 1], fbi6pc$x[, 2], color = as.factor(states), label = states, geom = "point",
+      show.legend = T, xlab = "PC1", ylab = "PC2")
+```
+Pc1 explains 0.5446 of the variance, pc2 explains 0.1814 of the variance for a total of 0.7260 of the cumulative variance.
+
+PC1: The negative average of Aggravated.assault, Burglary, Larceny.theft, Legacy.rape, Motor.vehicle.theft, Murder, and Robbery.
+
+PC2: The average of Burglary, Legacy.rape, and Motor.vehicle.theft minus the average of Murder and Robbery.
+
+
+3. Data on the fastest times run by men in eight races of different lengths are posted in the file "records.men.csv" for various countries. There is one line of data for each country with variables. 
+
+   - country: Name of country
+   - x1: 100m (sec)
+   - x2: 200m (sec)
+   - x3: 400m (sec)
+   - x4: 800m (min)
+   - x5: 1500m (min)
+   - x6: 5000m (min)
+   - x7: 10000m (min)
+   - x8: marathon (min)
+
+The times for the three shortest races are recorded in seconds, and the record times for the other five races are recorded in minutes. 8 points for each of the following questions.
+
+ a. Determine how many factors to use in factor analysis for the data on record race times for men. Briefly justify your choice.
+
+```{r}
+records.men <- read.csv("records.men.csv")
+
+records.menpc <- prcomp(records.men[2:9], scale = T, center = T)
+summary(records.menpc)
+
+records.menpc$loadingf <- records.menpc$rotation %*% diag(records.menpc$sdev)
+records.menpc$loadingf
+
+records.menpc.2f <- varimax(records.menpc$loadingf[, 1:2])
+records.menpc.2f$loadings
+```
+
+I will choose to use 2 factors because using PCA I found that the first 2 rotated factors cover 0.918 of the variation.
+
+ b. Compute and report maximum likelihood estimates for a varimax rotation of the factor loadings. Also report uniquenesses and communalities for the eight variables. 
+
+```{r}
+mlefact2 <- factanal(records.men[2:9], cor = T, factors = 4, n.obs = 88, method = "mle", rotation = "varimax")
+mlefact2
+
+mlefact2 <- factanal(records.men[2:9], cor = T, factors = 3, n.obs = 88, method = "mle", rotation = "varimax")
+mlefact2
+
+mlefact2.com <- diag(mlefact2$correlation) - mlefact2$uniquenesses
+
+
+factable <- cbind(mlefact2$loadings, mlefact2.com, mlefact2$uniquenesses)
+factable
+```
+
+3 factors have a p-value larger than 0.05, so we accept the null hypothesis that 3 factors are sufficient. 
+
+ c. Give a one or two sentence interpretation of each of your factors. Which have the weakest distance programs? Which countries have the strongest programs for sprints (100m, 200m, and 400m races)? Which have the weakest sprint programs?
+ 
+
+Factor 1: The average of all the variables with an emphasis on variables 5-8. 
+
+Factor 2: The average of all the variables with an emphasis on variables 1-4.
+
+Factor 2: The average of all the variables with an emphasis on variables 4 and 5.
+
+Factor 2 shows a strong sprint program and weak distance program while factor 2 shows a strong distance program and a weak sprint program.
+
+
+4. The energy dispersive X-ray fluorescence (EDXRF) was used to determine the chemical composition of celadon body and glaze in Longquan kiln (at Dayao County) and Jingdezhen kiln (Famous antiques in China), which helps to investigate the raw materials and firing technology. The data 'Chemical Composition of Ceramic.csv' contains the EDXRF measurements for 40 typical shards in four cultural eras. Our aim is to cluster those 40 observations by data and identify chemical elements that are strongest explanatory variables to classify samples into different cultural eras and kilns. 
+
+   - Ceramic.Name: name of ceramic types from Longquan and Jindgezhen
+   - Part: a binary categorical variable ('Body' or 'Glaze')
+   - Na2O: percentage of Na2O (wt%)
+   - MgO: percentage of MgO (wt%)
+   - Al2O3: percentage of AI2O3 (wt%)
+   - SiO2: percentage of SiO2 (wt%)
+   - K2O: percentage of K2O (wt%)
+   - CaO: percentage of CaO (wt%)
+   - TiO2: percentage of TiO2 (wt%)
+   - Fe2O3: percentage of Fe2O3 (wt%)
+   - MnO: percentage of MnO (ppm)
+   - CuO: percentage of CuO (ppm)
+   - ZnO: percentage of ZnO (ppm)
+   - PbO2: percentage of PbO2 (ppm)
+   - Rb2O: percentage of Rb2O (ppm)
+   - SrO: percentage of SrO (ppm)
+   - Y2O3: percentage of Y2O3 (ppm)
+   - ZrO2: percentage of ZrO2 (ppm)
+   - P2O5: percentage of P2O5 (ppm)
+ 
+  a. Use hierarchical clustering algorithm with ward linkage on all the chemical concentrations (exclude 'Ceramic.Name' and 'Part'), determine the number of clusters by data. Compare the cluster results from the true ceramic types from the variable 'Ceramic.Name'. 
+ 
+```{r}
+library(fpc)
+library(plyr)
+library(reshape)
+library(vegan)
+
+CCC <- read.csv("Chemical Composition of Ceramic.csv")
+
+CCC.euc.dist <- vegdist(CCC[,3:19], method="euclidean")
+
+CCC.euc.clust <- hclust(CCC.euc.dist, method="ward.D2")
+
+# Plot within/between ratios against number of clusters
+CCC.euc.ratio <- sapply(2:10, function(x) {
+  cluster.stats(CCC.euc.dist, clustering = cutree(CCC.euc.clust, x))$wb.ratio
+})
+qplot(2:10, CCC.euc.ratio, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "Within/Between Ratio", main = "Euclidean Distance (Ward's Method)")
+
+# Plot Calinski-Harabasz index against number of clusters
+CCC.euc.ch <- sapply(2:10, function(x) {
+  cluster.stats(CCC.euc.dist, clustering = cutree(CCC.euc.clust, x))$ch
+})
+qplot(2:10, CCC.euc.ch, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "ch Index", main = "Euclidean Distance (Ward's Method)")
+
+CCC$cl.euc <- cutree(CCC.euc.clust, 3)
+
+plotcluster(CCC[ ,3:19], CCC$cl.euc, method="dc")
+
+CCC1 = CCC
+
+x = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 12, 12, 12, 12)
+CCC1$Names = x
+
+plotcluster(CCC[ ,3:19], CCC1$Names, method="dc")
+
+table(CCC1$Names, CCC$cl.euc)
+```
+
+A good number of clusters for this data is 3 because that is where the first elbow is located on the Within/Between Ratio graph and 3 is where the peak is located on the ch Index.
+
+The cluster results are relatively similar to the true groupings. The clustering did a good job clustering each individual type together for most of the types, it had the hardest time pairing DY-Y, or the 10th group, with itself.
+
+
+
+  b. Plot the cluster result by multi-dimensional scaling.
+  
+```{r}
+X <- cmdscale(CCC.euc.dist, k = 9, eig = T)
+X
+
+# Compute the PM1 criteria
+pm1 <- cumsum(abs(X$eig)) / sum(abs(X$eig))
+pm1
+
+qplot(X$points[, 1], X$points[, 2], label = CCC$cl.euc, geom = "text",
+      xlab = "Coordinate 1", ylab = "Coordinate 2", main = "MDS with Euclidean Distances")
+```
+  
+  
+  c. Use hierarchical clustering algorithm with single and centroid linkage. Compare with the result from (a). Which is better?
+  
+```{r}
+CCC.euc.clust.single <- hclust(CCC.euc.dist, method="single")
+
+# Plot within/between ratios against number of clusters
+CCC.euc.ratio.single <- sapply(2:10, function(x) {
+  cluster.stats(CCC.euc.dist, clustering = cutree(CCC.euc.clust.single, x))$wb.ratio
+})
+qplot(2:10, CCC.euc.ratio.single, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "Within/Between Ratio", main = "Euclidean Distance (Ward's Method)")
+
+# Plot Calinski-Harabasz index against number of clusters
+CCC.euc.ch.single <- sapply(2:10, function(x) {
+  cluster.stats(CCC.euc.dist, clustering = cutree(CCC.euc.clust.single, x))$ch
+})
+qplot(2:10, CCC.euc.ch.single, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "ch Index", main = "Euclidean Distance (Ward's Method)")
+
+CCC$cl.euc.single <- cutree(CCC.euc.clust.single, 5)
+
+plotcluster(CCC[ ,3:19], CCC$cl.euc.single, method="dc")
+
+table(CCC1$Names, CCC$cl.euc.single)
+
+
+
+CCC.euc.clust.centroid <- hclust(CCC.euc.dist, method="centroid")
+
+# Plot within/between ratios against number of clusters
+CCC.euc.ratio.centroid <- sapply(2:10, function(x) {
+  cluster.stats(CCC.euc.dist, clustering = cutree(CCC.euc.clust.centroid, x))$wb.ratio
+})
+qplot(2:10, CCC.euc.ratio.centroid, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "Within/Between Ratio", main = "Euclidean Distance (Ward's Method)")
+
+# Plot Calinski-Harabasz index against number of clusters
+CCC.euc.ch.centroid <- sapply(2:10, function(x) {
+  cluster.stats(CCC.euc.dist, clustering = cutree(CCC.euc.clust.centroid, x))$ch
+})
+qplot(2:10, CCC.euc.ch.centroid, geom = c("point", "line"),
+      xlab = "Number of Clusters", ylab = "ch Index", main = "Euclidean Distance (Ward's Method)")
+
+CCC$cl.euc.centroid <- cutree(CCC.euc.clust.centroid, 7)
+
+plotcluster(CCC[ ,3:19], CCC$cl.euc.centroid, method="dc")
+
+table(CCC1$Names, CCC$cl.euc.centroid)
+
+
+```
+
+I think the centroid method is the best because it uses 7 clusters which is where the elbow is located on the Within/Between Ratio graph and 7 is where the peak is located on the ch Index, as well as grouping more accurately than the other 2 methods.
+
+  
+  d. Use K-means clustering algorithm on all the chemical concentrations (exclude 'Ceramic.Name' and 'Part'), determine the number of clusters by data. Compare the cluster results from the true ceramic types from the variable 'Ceramic.Name'. 
+
+```{r}
+set.seed(475)
+CCC.km2 <- kmeans(CCC[ ,3:19], 3)
+CCC.km2
+CCC.km2$betweenss / CCC.km2$totss
+
+cluster_membership <- cbind(CCC.km2$cluster, CCC$cl.euc)
+rownames(cluster_membership) <- CCC1$Names
+cluster_membership
+table(CCC.km2$cluster, CCC$cl.euc)
+
+plotcluster(CCC[ ,3:19], CCC.km2$cluster, method="dc")
+
+set.seed(475)
+CCC.km1 <- kmeans(CCC[ ,3:19], 4)
+CCC.km1
+CCC.km1$betweenss / CCC.km1$totss
+
+cluster_membership <- cbind(CCC.km1$cluster, CCC$cl.euc)
+rownames(cluster_membership) <- CCC1$Names
+cluster_membership
+table(CCC.km1$cluster, CCC$cl.euc)
+
+plotcluster(CCC[ ,3:19], CCC.km1$cluster, method="dc")
+
+set.seed(475)
+CCC.km2 <- kmeans(CCC[ ,3:19], 5)
+CCC.km2
+CCC.km2$betweenss / CCC.km2$totss
+
+cluster_membership <- cbind(CCC.km2$cluster, CCC$cl.euc)
+rownames(cluster_membership) <- CCC1$Names
+cluster_membership
+table(CCC.km2$cluster, CCC$cl.euc)
+
+plotcluster(CCC[ ,3:19], CCC.km2$cluster, method="dc")
+
+set.seed(475)
+CCC.km2 <- kmeans(CCC[ ,3:19], 6)
+CCC.km2
+CCC.km2$betweenss / CCC.km2$totss
+
+cluster_membership <- cbind(CCC.km2$cluster, CCC$cl.euc)
+rownames(cluster_membership) <- CCC1$Names
+cluster_membership
+table(CCC.km2$cluster, CCC$cl.euc)
+
+plotcluster(CCC[ ,3:19], CCC.km2$cluster, method="dc")
+
+table(CCC1$Names, CCC.km1$cluster)
+```
+
+4 clusters produced a good accuracy(between_SS / total_SS =  82.6 %) and the clusters are grouped the best with 4 clusters.
+
+4 clusters also does a good job grouping the true types together except it gets worse for the later types, groups 7 and later are not great.
+
+
+  e. Plot the K-means cluster result by multi-dimensional scaling.
+  
+```{r}
+X <- cmdscale(CCC.euc.dist, k = 9, eig = T)
+X
+
+# Compute the PM1 criteria
+pm1 <- cumsum(abs(X$eig)) / sum(abs(X$eig))
+pm1
+
+qplot(X$points[, 1], X$points[, 2], label = CCC.km1$cluster, geom = "text",
+      xlab = "Coordinate 1", ylab = "Coordinate 2", main = "MDS with Euclidean Distances")
+```
+
+  
+  
+  

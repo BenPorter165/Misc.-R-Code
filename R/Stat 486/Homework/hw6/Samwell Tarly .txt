@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/954
+id: 954
+name: Samwell Tarly
+gender: Male
+culture: Andal
+born: In 283 AC, at Horn Hill
+died: 
+alive: TRUE
+titles: 
+aliases: Sam, Ser Piggy, Prince Pork-chop, Lady Piggy, Sam the Slayer, Black Sam, Lord of Ham
+father: 
+mother: 
+spouse: 
+allegiances: House Tarly of Horn Hill
+books: A Game of Thrones, A Clash of Kings, A Dance with Dragons
+povBooks: A Storm of Swords, A Feast for Crows
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: John Bradley-West

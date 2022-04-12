@@ -1,0 +1,157 @@
+---
+title: "R Notebook"
+Author: "Ben Porter"
+output:
+  html_document:
+    df_print: paged
+---
+### Ben Porter
+
+## Question 1
+```{r}
+x <- "\"Age is an issue of mind over matter. If you don't mind, it doesn't matter.\" \n \n-- Mark Twain"
+writeLines(x)
+
+```
+
+## Question 2
+```{r}
+library(stringr)
+a = c('apple', 'appleapple', 'BananaBanana', 'Banana', 'cherryCherry')
+b = c()
+c = c()
+for(i in a){
+  if(str_length(i) %% 2 == 0){
+    b = c(b, str_sub(i, start = 1, end = str_length(i)/2))
+    c = c(c, str_sub(i, str_length(i)/2 + 1, str_length(i)))
+  }
+  
+}
+str_detect(b, fixed(c, ignore_case = TRUE))
+
+```
+
+## Question 3
+```{r}
+d = c("Dear Friends,
+
+The exuberance of the change of seasons at Iowa State University never grows old — from the blooms of spring to the joys of another graduating class. During this holiday season, let your spirits be lifted by family and friends — and by this short video of captivating images of this magnificent campus.
+
+Our best wishes to you and yours for a happy, hope-filled 2022!
+
+Wendy Wintersteen and Robert Waggoner")
+length(strsplit(d, " ")[[1]])
+```
+
+## Question 4
+```{r}
+#2
+script <- readLines('matrix_script.txt')
+sum(str_count(script, "NEO"))
+
+#3
+sum(str_count(script, "Trin"))
+
+```
+
+## Question 1
+```{r}
+happy <- readr::read_csv('happy.csv')
+happy$happy = factor(happy$happy, levels = c('not too happy', 'pretty happy', 'very happy'))
+happy$marital = factor(happy$marital, levels = c('married', 'widowed', 'divorced', 'separated', 'never married'))
+happy$degree = factor(happy$degree, levels = c('lt high school', 'high school', 'junior college', 'bachelor', 'graduate'))
+happy$health = factor(happy$health, levels = c('poor', 'fair', 'good', 'excellent'))
+
+```
+
+## Question 2
+```{r}
+summary(happy$happy)
+summary(happy$health)
+tapply(happy$happy, happy$health, summary)
+boxplot(happy$happy ~ happy$health)
+
+```
+
+## Question 3
+```{r}
+library(plyr)
+happy1 = happy
+
+happy1$happy = revalue(happy1$happy, c('not too happy' = "Not Happy", 'pretty happy' = "Happy", 'very happy' = 'Happy'))
+
+
+x4 = table(happy1$happy, happy$marital)
+barplot(x4, main = "Proportion of Happiness by Marital Status", xlab = "Marital Status", ylab = "Proportion of Happiness", legend = TRUE)
+
+```
+I have defined a happy respondent as someone who responded with pretty happy or very happy.
+
+
+## Question 4
+```{r}
+#a.
+happy2 = data.frame("Happiness" = happy1$happy, "Marital_Status" = happy1$marital)
+
+married = subset(happy2, happy1$marital %in% 'married')
+marriednhappy = subset(married, married$Happiness %in% 'Happy')
+summary(marriednhappy)
+
+#b.
+marriedorhappy = subset(happy2, happy1$marital %in% 'married' | happy1$happy %in% 'Happy')
+summary(marriedorhappy)
+
+#c.
+notboth = marriedorhappy[-which(happy1$marital %in% 'married' & happy1$happy %in% 'Happy'),]
+summary(notboth)
+
+#d.
+neither = subset(happy2, happy2$Happiness %in% 'Not Happy')
+neither = subset(neither, neither$Marital_Status != 'married')
+summary(neither)
+
+```
+
+## Question 5
+```{r}
+happy$partyid = factor(happy$partyid)
+levels(happy$partyid)
+
+#a. and b.
+happy$partyid = revalue(happy$partyid, c("ind,near dem" = "democrat", "not str democrat" = "democrat", "strong democrat" = "democrat", "ind,near rep" = "republican", "not str republican" = "republican", "strong republican" = "republican"))
+
+#c.
+summary(happy$partyid)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

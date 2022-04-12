@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/576
+id: 576
+name: Jon Connington
+gender: Male
+culture: Stormlands
+born: In or between 263 AC and 265 AC
+died: 
+alive: TRUE
+titles: Lord of Griffin's Roost, Hand of the King, Hand of the True King
+aliases: Griffthe Mad King's Hand
+father: 
+mother: 
+spouse: 
+allegiances: House Connington of Griffin's Roost, House Targaryen of King's Landing
+books: A Storm of Swords, A Feast for Crows, The World of Ice and Fire
+povBooks: A Dance with Dragons
+tvSeries: 
+playedBy: 

@@ -1,0 +1,257 @@
+---
+title: "Lab 5 Report"
+author: "Ben Porter"
+date: "9/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 1
+(a)
+```{r}
+library(Rcpp)
+library(ggplot2)
+library(GGally)
+dogs <- read.csv("dogs.csv")
+
+cordogs <- cor(dogs[, 2:5])
+cordogs
+
+```
+all pairs have positive, (moderately) strong correlation.
+
+
+(b)
+```{r}
+
+library(biotools)
+n <- nrow(dogs)
+multcor.test(cordogs, n = n)
+
+```
+all correlations are significant at 0.05 level.
+
+## Exercise 2
+```{r}
+library(reshape2)
+ggplot(melt(dogs, id.vars = 1), aes(x = variable, y = value)) +
+  geom_boxplot()
+```
+LowCO2 has larger heartbeat time than highCO2, Using halothane has longer heartbeat time than not using halothane.
+
+## Exercise 3
+(a)
+```{r}
+dogs$diff1 <- dogs$HighCO2 - dogs$LowCO2 
+dogs$diff2 <- dogs$HighCO2H - dogs$LowCO2
+dogs$diff3 <- dogs$LowCO2H - dogs$LowCO2
+
+ggpairs(dogs[, 6:8])
+
+```
+
+All correlations are positive and moderately strong.
+
+Scatterplot shows no obvious linear trend.
+
+(b)
+
+unimodal, skewed to left.
+
+(c)
+```{r}
+var(dogs[, 6:8])
+```
+
+The var of 3 diff are different. But don't need equal var assumption to use Hotelling T2 test.
+
+## Exercise 4
+(a)
+```{r}
+library(mvShapiroTest)
+mvShapiro.Test(as.matrix(dogs[, 6:8]))
+```
+p-value: 0.001033 < 0.05, so we reject H0. Data are not from 3d normal distribution.
+
+
+(b)
+```{r}
+apply(dogs[, 6:8], 2, shapiro.test)
+```
+diff1(p-value 0.006534 < 0.05), diff3 (p-value 0.008349 < 0.05), reject H0. diff1 and diff3 are not normal distributions.
+
+diff2 (p-value 0.06029 > 0.05), cannot reject H0. diff2 is from normal distribution.
+
+## Exercise 5
+```{r}
+library(DescTools)
+HotellingsT2Test(dogs[, 6:8], mu = c(0, 0, 0), test = "f")
+
+```
+
+p-value: 3.318e-07 < 0.05, reject H0. The population mean of the 3 diff is not (0, 0, 0).
+
+## Exercise 6
+(a)
+```{r}
+TB.conf.int <- function(X, level = 0.95)
+{ 
+  # Convert X to a matrix, if it is not a matrix already, from
+  # vectors or data frames.
+  X <- as.matrix(X)
+  
+  # Set n to the number of observations, p to the number of variables.
+  n <- nrow(X)
+  p <- ncol(X)
+  
+  # Stop if arguments are invalid.
+  if (!is.numeric(X))
+  {
+    stop("Data must be numeric")
+  }
+  
+  if (n < p)
+  {
+    stop("Must have at least as many observations as variables")
+  }
+  
+  if (!is.numeric(level) || length(level) != 1 || level <= 0 || level >= 1)
+  {
+    stop("Confidence level must be between 0 and 1")
+  }
+  
+  # Create a matrix A in which each column represents
+  # a difference between two pairs of means
+  np <- p * (p - 1) / 2
+  A <- matrix(c(0), ncol = np, nrow = p)
+  nc <- 0
+  for (i in 1:(p - 1)) {
+    for (j in 1:(p - i)) {
+      A[i, nc + j] <- 1
+      A[i + j, nc + j] <- -1
+    }
+    nc <- nc + (p - i)
+  }
+  
+  # Create a matrix that will hold the confidence intervals.
+  CI <- matrix(NA, 2, ncol(A))
+  rownames(CI) <- c("lower", "upper")
+  colnames(CI) <- colnames(A)
+  
+  CIB <- matrix(NA, 2, ncol(A))
+  rownames(CIB) <- c("lower", "upper")
+  colnames(CIB) <- colnames(A)
+  
+  CIT <- matrix(NA, 2, ncol(A))
+  rownames(CIT) <- c("lower", "upper")
+  colnames(CIT) <- colnames(A)
+  
+  # Find F distribution quantile for T-squared confidence intervals.
+  F <- qf(level, p, n - p)
+  
+  # Find t distribution percentile for Bonferroni confidence intervals
+  alpha <- (1 - level) / 2 / ncol(A)
+  levelB <- 1 - alpha
+  tB <- qt(levelB, n - 1)
+  t <- qt(1 - (1 - level) / 2, n - 1)
+  
+  # Compute the sample covariance matrix of the original variables.
+  C <- cov(X)
+  
+  # Find the confidence intervals for the specified linear combinations.
+  for (i in 1:ncol(A))
+  { 
+    # Find the sample mean and variance of this linear combination.
+    m <- mean(X %*% A[, i])
+    v <- t(A[, i]) %*% C %*% A[, i]
+    
+    # Find the confidence interval for this difference.
+    CI[1, i] <- m - sqrt((p * (n - 1) / n / (n - p)) * F * v)
+    CI[2, i] <- m + sqrt((p * (n - 1) / n / (n - p)) * F * v)
+    
+    CIB[1, i] <- m - tB * sqrt(v / n)
+    CIB[2, i] <- m + tB * sqrt(v / n)
+    
+    CIT[1, i] <- m - t * sqrt(v / n)
+    CIT[2, i] <- m + t * sqrt(v / n)
+  }
+  
+  # Print the confidence intervals.
+  cat(" T-squared simultaneous confidence intervals: \n\n")
+  print(CI)
+  
+  cat("\n\n Bonferroni simultaneous confidence intervals: \n\n")
+  print(CIB)
+  
+  cat("\n\n One-at-a-Time t confidence intervals: \n\n")
+  print(CIT)
+}
+
+TB.conf.int(dogs[, 2:5])
+```
+
+HighCO2-LowCO2 is not significant,HighCO2H-LowCO2H is not significant.
+
+HighCO2 is significantly smaller than HighCO2H, 
+
+HighCO2 < LowCO2H,
+
+LowCO2 < HighCO2H
+
+LowCO2 < LowCO2H
+
+(b)
+
+Both are simultaneous CI, but Bonferroni CI are shorter.
+
+(c)
+
+It does not provide simultaneous 95% CI. It is too short.
+
+## Exercise 7
+```{r}
+C <- matrix(c(0.5, -0.5, 0.5, -0.5, 
+              -0.5, -0.5, 0.5, 0.5,
+              -1, 1, 1, -1), ncol = 4, byrow = T)
+effects <- as.matrix(dogs[, 2:5]) %*% t(C)
+
+HotellingsT2Test(effects, mu = c(0, 0, 0))
+```
+
+All 3 effects equals to 0 if all 4 anesthetics are the same.
+
+p-value is 3.318e-07 < 0.05, reject H0. The population mean of three effects are not (0, 0, 0).
+
+Same as Exercise 5.
+
+
+## Exercise 8
+```{r}
+mean.effects <- colMeans(effects)
+mean.effects
+
+var.effects <- var(effects)
+var.effects
+
+CI.effects <- matrix(NA, 2, ncol(effects))
+rownames(CI.effects) <- c("lower", "upper")
+colnames(CI.effects) <- colnames(effects)
+
+n <- nrow(effects)
+level <- 0.95
+levelB <- 1 - (1 - level) / (2 * ncol(effects))
+tB <- qt(levelB, n - 1)
+CI.effects[1, ] <- mean.effects - tB * sqrt(diag(var.effects) / n)
+CI.effects[2, ] <- mean.effects + tB * sqrt(diag(var.effects) / n)
+CI.effects
+```
+
+CO2 effect is significant: HighCO2 < LowCO2. (LowCO2 is more effective)
+
+Halothane effect is significant: Using Halothane > Not using Halothane. (Using Halothane is more effective).
+
+Interaction is not significant: No significant CO2 effect between using halothane and not using halothane. No significant halothane effect if change CO2 level.
+

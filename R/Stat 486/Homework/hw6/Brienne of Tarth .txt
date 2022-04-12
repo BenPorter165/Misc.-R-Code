@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/216
+id: 216
+name: Brienne of Tarth
+gender: Female
+culture: 
+born: In 280 AC
+died: 
+alive: TRUE
+titles: 
+aliases: The Maid of Tarth, Brienne the Beauty, Brienne the Blue
+father: 
+mother: 
+spouse: 
+allegiances: House Baratheon of Storm's End, House Stark of Winterfell, House Tarth of Evenfall Hall
+books: A Clash of Kings, A Storm of Swords, A Dance with Dragons
+povBooks: A Feast for Crows
+tvSeries: Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Gwendoline Christie

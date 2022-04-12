@@ -1,0 +1,325 @@
+---
+title: "Homework 6"
+author: "Ben Porter"
+date: "3/10/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+# a.
+```{r}
+library(purrr)
+n <- 100
+sumamap <- function(n){ sum(map_dbl(1:n, function(v) (1/v)))}
+sumamap(n)
+```
+
+# b.
+```{r}
+n<- 100
+m<- 50
+
+sumbmap <- function(n, m){sum(do.call(rbind, map(1:n, function(i) 2 ^ (i * (map_dbl(1:m, function(v) (-v)))))))}
+sumbmap(n, m)
+```
+
+# c.
+```{r}
+n<- 100000
+m<- 50
+
+
+
+
+sum1aloop <- function(n) {
+  sum1 <- vector("numeric", n)
+  for (i in 1:n) {
+    sum1[i] <- 1/i
+    }
+  sum(sum1)
+}
+sum1amatrix <- function(n) {
+  x <- matrix(1:n, 1, n)
+  sum(1/x)
+  }
+
+system.time(sumamap(n))
+system.time(sum1aloop(n))
+system.time(sum1amatrix(n))
+
+
+sum1bloop <- function(n, m) {
+  a <- matrix(, n, m)
+  for(i in 1:n){
+    for(j in 1:m){
+      a[i, j] = -(i * j)
+    }
+    }
+  sum(2^a)
+  }
+
+sum1bmatrix <- function(n, m) {
+  b <- (matrix(1:n, n, m) * matrix(1:m, n, m, byrow=TRUE))
+  c <- matrix(2^(-b), n, m)
+  sum(c)
+}
+
+system.time(sumbmap(n, m))
+system.time(sum1bloop(n, m))
+system.time(sum1bmatrix(n, m))
+
+
+```
+
+The fastest approach is the vectorized operations and the slowest is the purrr functions, with the loop functions falling in between the two in regards to speed.
+
+
+## Question 2
+# a.
+```{r}
+map_dbl(mtcars, function(v)median(v))
+```
+
+# b.
+```{r}
+map(split(mtcars, mtcars$cyl), colMeans, na.rm=TRUE)
+```
+
+# c.
+```{r}
+library(classdata)
+map_chr(classdata::cities, class)
+```
+
+# d.
+```{r}
+map(iris, function(v) length(unique(v)))
+```
+
+# e.
+```{r}
+map2_dbl(iris$Sepal.Length, iris$Sepal.Width, prod)
+```
+
+# f.
+```{r}
+pmap_dbl(list(iris$Sepal.Length, iris$Sepal.Width, iris$Petal.Length, iris$Petal.Width), sum)
+```
+
+## Question 3
+# a.
+```{r}
+library(repurrrsive)
+library(stringr)
+
+nameActor <- map(got_chars, `[`, c("name", "playedBy"))
+
+name <- unlist(map(got_chars, `[`, "name"))
+actor <- map(got_chars, `[`, "playedBy")
+actorcollapsed <- map_chr(actor, function(v) str_c(unlist(v), collapse = ", "))
+
+```
+
+# b.
+```{r}
+walk2(1:length(actorcollapsed), 1:length(name), function(v, i) writeLines(actorcollapsed[v], paste(name[v], ".txt")))
+```
+
+# c.
+```{r}
+goturl <- unlist(map(got_chars, `[`, "url"))
+gotid <- unlist(map(got_chars, `[`, "id"))
+gotgender <- unlist(map(got_chars, `[`, "gender"))
+gotculture <- unlist(map(got_chars, `[`, "culture"))
+gotborn <- unlist(map(got_chars, `[`, "born"))
+gotdied <- unlist(map(got_chars, `[`, "died"))
+gotalive <- as.character(unlist(map(got_chars, `[`, "alive")))
+gotfather <- as.character(unlist(map(got_chars, `[`, "father")))
+gotmother <- as.character(unlist(map(got_chars, `[`, "mother")))
+gotspouse <- as.character(unlist(map(got_chars, `[`, "spouse")))
+
+
+
+titles <- map(got_chars, `[`, "titles")
+titlescollapsed <- map_chr(titles, function(v) str_c(unlist(v), collapse = ", "))
+
+aliases <- map(got_chars, `[`, "aliases")
+aliasescollapsed <- map_chr(aliases, function(v) str_c(unlist(v), collapse = ", "))
+
+allegiances <- map(got_chars, `[`, "allegiances")
+allegiancescollapsed <- map_chr(allegiances, function(v) str_c(unlist(v), collapse = ", "))
+
+books <- map(got_chars, `[`, "books")
+bookscollapsed <- map_chr(books, function(v) str_c(unlist(v), collapse = ", "))
+
+povBooks <- map(got_chars, `[`, "povBooks")
+povBookscollapsed <- map_chr(povBooks, function(v) str_c(unlist(v), collapse = ", "))
+
+tvSeries <- map(got_chars, `[`, "tvSeries")
+tvSeriescollapsed <- map_chr(tvSeries, function(v) str_c(unlist(v), collapse = ", "))
+
+
+information <- imap(1:length(name), function(x, i) {str_c("url: ", goturl[i], "\n", "id: ", gotid[i], "\n", "name: ", name[i], "\n", "gender: ", gotgender[i], "\n", "culture: ", gotculture[i], "\n", "born: ", gotborn[i], "\n", "died: ", gotdied[i], "\n", "alive: ", gotalive[i], "\n", "titles: ", titlescollapsed[i], "\n", "aliases: ", aliasescollapsed[i], "\n", "father: ", gotfather[i], "\n", "mother: ", gotmother[i], "\n", "spouse: ",gotspouse[i], "\n", "allegiances: ", allegiancescollapsed[i], "\n", "books: ", bookscollapsed[i], "\n", "povBooks: ", povBookscollapsed[i], "\n", "tvSeries: ", tvSeriescollapsed[i], "\n", "playedBy: ", actorcollapsed[i])})
+
+
+walk2(1:length(information), 1:length(name), function(v, i) writeLines(unlist(information[v]), paste(name[v], ".txt")))
+```
+
+## Question 4
+# a.
+```{r}
+l <- list(
+  matrix(c(2, 3,
+           4, 5), 2, 2),
+  diag(c(1, 2)), 
+  diag(c(-2, 1))
+)
+reduce(l, `%*%`)
+
+```
+
+# b.
+```{r}
+accumulate(l, `sum`)
+```
+
+## Advanced functions
+## Question 1
+# a.
+```{r}
+x <- 10
+f1 <- function(x) {
+  function() {
+    x + 10
+  }
+}
+g <- f1(1)
+g()
+```
+The output of 11 makes sense because of the Dynamic lookup principle of the lexical scoping of R which explains that R looks up values when the function is run, not when it is created, so x would equal 1 while the function is running and not 10, thus x + 1 = 11.
+It is also worth it to note that it makes sense that f1(1) is assigned to g and then g is ran as a function. This is because f1 is a function that creates another function that then does x + 10.
+
+# b.
+```{r}
+y <- 2
+i1<- function() {
+  z <- 3
+  c(y, z)
+}
+y <- 3
+i1()
+
+
+
+```
+This output makes sense for a similar reason as in a. Dynamic lookup explains that R looks up values when the function is run, not when it is created.
+Because of this y is equal to 3, since it was last assigned to 3 when the function is run. 
+After this the function runs and assigns z to 3 and then it puts y and z into the vector that is ultimately returned.
+
+
+# c.
+```{r}
+f <- function(x) print("ha")
+g <- function(y) print("hello")
+y = f()
+g(y)
+```
+This output makes sense for a few reasons. It makes sense that "ha" is printed because f() is ran when y is set equal to f().
+This is because setting y = f() runs f() and then assigns that value to y instead of assigning the function to y like y <- f().
+"Hello" is printed when g(y) is run, and the y here effectively does nothing, which is explained by the first principle of lazy evaluation that explains that function arguments are held as an unevaluated expression that is only evaluated if accessed.
+Since g() does nothing with any value that is input to it, the y does nothing.
+
+
+# d.
+```{r}
+f <- function(x) print("ha")
+g <- function(y) print("hello")
+g(y = f())
+```
+This output makes sense for the same reason that it made sense for "hello" to be printed in part c.
+When g(y = f()) is called, it runs g(), regardless of what is in between the parenthesis.
+This is explained by the principle of lazy evaluation that says function arguments are held as an unevaluated expression that is only evaluated if accessed.
+
+
+## Question 2
+# a.
+```{r}
+pol <- function(a) {
+  function(x) {
+    map_dbl(x, function (x) sum(a*x^seq(0, length(a)-1)))
+  }
+  }
+
+
+a <- c(1, 2, 3)
+x <- c(1, 2, 3)
+
+b <- pol(a)
+b(x)
+
+```
+
+
+# b.
+```{r}
+library(testthat)
+#i.
+expect_equal(is.function(pol(a)), TRUE)
+
+#ii.
+b <- pol(2)
+x <- c(1, 2, 3, 4, 5, 6)
+expect_equal(b(x), rep(2, length(x)))
+
+#iii.
+a <- c(1, -1)
+x <- c(1, 2, 3, 4, 5, 6)
+b <- pol(a)
+expect_equal(length(b(x)), length(x))
+
+```
+
+
+# c.
+```{r}
+a <- c(1, 0, 1)
+b <- pol(a)
+integrate(pol(a), 0, 10)
+
+```
+
+
+# d.
+```{r}
+integratepol <- function(a, l, u){
+  p <- function(a) {
+  function(x) {
+    map_dbl(x, function (x) sum(a*x^seq(0, length(a)-1)))
+  }
+  }
+  integrate(p(a), l, u)
+}
+
+integratepol(a, 0, 10)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

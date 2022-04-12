@@ -1,0 +1,183 @@
+---
+title: "Lab 4 Report"
+author: "Ben Porter"
+date: "9/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Exercise 1
+```{r}
+sweat <- read.table("sweat.dat", header = F, col.names = c("subject", "x1", "x2", "x3"))
+
+library(ggplot2)
+library(GGally)
+ggpairs(sweat[, 2:4])
+
+xbar <- sapply(sweat[, 2:4], mean)  # same as colMeans function
+xbar
+scor <- cor(sweat[, 2:4])
+scor
+svar <- var(sweat[, 2:4])           # same as cov function
+svar
+det(svar)                           # determinant of covariance matrix
+sum(diag(svar))                     # trace of covariance matrix
+sum(diag(scor))
+```
+
+(a)
+
+```{r}
+library(ggplot2)
+library(GGally)
+
+sweat <- read.table("sweat.dat", header = F, col.names = c("subject", "x1", "x2", "x3"))
+ggpairs(sweat[, 2:4])
+
+```
+They have somewhat linear relationships with eachother, although x2 and x3 do not have a clear relationship.
+(b)
+no outliers. elliptical
+(c)
+bell shape. (small skewness)
+(d)
+```{r}
+
+xbar <- sapply(sweat[, 2:4], mean)
+xbar
+scor <- cor(sweat[, 2:4])
+scor
+svar <- var(sweat[, 2:4]) 
+svar
+det(svar)
+sum(diag(svar))
+sum(diag(scor))
+
+```
+The trace of the correlation matrix is the number of variables because the daigonal of the correlation matrix is 1 for each variable.
+
+
+## Exercise 2
+
+```{r}
+sweat_qqplot <- data.frame(x = c(sweat[, 2], sweat[, 3], sweat[, 4]),
+                           variable = rep(colnames(sweat[, 2:4]), each = nrow(sweat)))
+ggplot(sweat_qqplot, aes(sample = x)) +
+  geom_qq() +
+  geom_qq_line() +
+  facet_wrap(~ variable, scales = "free", nrow = 2)
+
+sapply(sweat[, 2:4], shapiro.test)
+
+
+```
+All 3 columns look normally distributed based on the qq plot and all 3 p-values > 0.05.
+
+## Exercise 3
+
+(a)
+H0: are from 3-dim multivariate distribution.
+Ha: are not from 3-dim multivariate distribution.
+
+
+(b)
+```{r}
+library(mvShapiroTest)
+mvShapiro.Test(as.matrix(sweat[, 2:4]))
+```
+cannot reject H0, because p-value (0.2567) > 0.05.
+
+
+## Exercise 4
+(a)
+H0: mu = (4, 50, 10)
+Ha: mu not = (4, 50, 10)
+
+
+(b)
+Normality: are from 3-dim multivariate normal distribution.
+Independence: are sampled independently.
+
+
+(c)
+```{r}
+library(DescTools)
+t2test <- HotellingsT2Test(sweat[, 2:4], mu = c(4, 50, 10))  # T.2 is the scaled value of the T2 statistic
+t2test
+n <- nrow(sweat[, 2:4])
+p <- ncol(sweat[, 2:4])
+t2test$statistic * p * (n - 1) / (n - p)
+
+
+```
+T2: 9.738. F: 2.9045. D.f: 3 and 17. P-value: 0.06493.
+
+
+(d)
+
+Cannot reject H0, because p-value (0.06493) > 0.05.
+
+## Exercise 5
+```{r}
+boards <- read.csv("board.stiffness.csv")
+head(boards)
+summary(boards[, 2:5])
+ggpairs(boards[, 2:5])
+
+newboards <- read.csv("newboard.stiffness.csv")
+newboards
+
+allboards <- rbind(boards, newboards)
+dim(allboards)
+allboards$wood <- "original"
+allboards$wood[allboards$board %in% 1001:1003] <- "new"
+allboards$wood <- factor(allboards$wood)
+allboards
+ggpairs(allboards[, 2:6], mapping = aes(color = wood, alpha = 0.5))
+
+newb <- as.matrix(newboards[, 2:5])
+bmean <- colMeans(boards[, 2:5])
+bmean <- as.matrix(bmean)
+bvar <- var(boards[, 2:5])
+n <- dim(boards)[1]
+p <- length(bmean)
+one <- matrix(c(1, 1, 1), ncol = 1)
+diff <- newb - one %*% t(bmean)
+sdiff <- ((n + 1) / n) * bvar
+d22 <- diff %*% solve(sdiff) %*% t(diff)
+d2 <- diag(d22)
+
+prob <- 1 - pchisq(d2, p)
+prob
+```
+
+1st (4.77e-04) and 3rd (3.37e-09): p-value < 0.05. They are not from the same type of wood.
+
+2nd (0.9998): p-value > 0.05. It is from the same type of wood.
+
+
+## Exercise 6
+```{r}
+library(mvtnorm)
+
+set.seed(40713)  # Do this before your first random generator!!!!
+
+xsigma <- matrix(c(1, -0.5, -0.5, 1), ncol = 2, byrow = T)
+
+# Simulate data from multivariate normal distribution
+sim.mvn <- data.frame(rmvnorm(100, mean = c(0, 0), sigma = xsigma))
+head(sim.mvn)
+qplot(X1, X2, data = sim.mvn) + theme(aspect.ratio = 1)
+mvShapiro.Test(as.matrix(sim.mvn))
+
+# Simulate data from multivariate t distribution
+sim.mvt <- data.frame(rmvt(100, sigma = xsigma))
+head(sim.mvt)
+qplot(X1, X2, data = sim.mvt) + theme(aspect.ratio = 1)
+mvShapiro.Test(as.matrix(sim.mvt))
+```
+Yes, this matched my expectations because the shapiro-wilk test for mvn had a p-value (0.5789) > 0.05 so it doesn't reject H0(is from mvn distribution) and the test for the mvt had a p-value (2.2e-16) < 0.05 so it does reject H0(is from mvn distribution).

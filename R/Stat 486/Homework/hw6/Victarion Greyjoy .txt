@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1074
+id: 1074
+name: Victarion Greyjoy
+gender: Male
+culture: Ironborn
+born: In 268 AC or before, at Pyke
+died: 
+alive: TRUE
+titles: Lord Captain of the Iron Fleet, Master of the Iron Victory
+aliases: The Iron Captain
+father: 
+mother: 
+spouse: 
+allegiances: House Greyjoy of Pyke
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords
+povBooks: A Feast for Crows, A Dance with Dragons
+tvSeries: 
+playedBy: 

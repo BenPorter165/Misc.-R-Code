@@ -1,0 +1,234 @@
+---
+title: "Lab9"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Ben Porter
+
+## Life Expectancy Data
+```{r}
+library(ggplot2)
+library(GGally)
+
+life <- read.csv("life.csv", row.names = 1)
+head(life)
+lifestd <- scale(life, center = T, scale = T)
+ggpairs(as.data.frame(lifestd), lower = list(continuous = "smooth"))
+lifecor <- cor(life)
+lifecor
+```
+
+## Use Principal Component Estimation for Factor Loadings
+```{r}
+# First do a principal component analysis
+lifepc <- prcomp(life, scale = T, center = T)
+summary(lifepc)
+
+# Scree plot for principal components
+qplot(1:ncol(life), lifepc$sdev ^ 2, geom = "line",
+      xlab = "Component Number", ylab = "Component Variance (eigenvalue)", main = "Scree Plot")
+
+# Display coefficients for principal components (eigenvectors)
+lifepc$rotation
+
+# Compute factor loadings for factors using principal components from the sample correlation matrix
+lifepc$loadings <- lifepc$rotation %*% diag(lifepc$sdev)
+lifepc$loadings
+
+# 1. Apply the varimax rotation to the 3-factor model
+varimax(lifepc$loadings[, 1:3])
+
+# 2. Apply the varimax rotation to the 2-factor model
+lpcv <- varimax(lifepc$loadings[, 1:2])
+print(lpcv$loadings, cutoff = 0)
+# Compute communalities and uniquenesses
+lpcv.com <- diag(lpcv$loadings %*% t(lpcv$loadings))
+lpcv.uniq <- diag(lifecor) - lpcv.com
+lpcvtable <- cbind(lpcv$loadings, lpcv.com, lpcv.uniq)
+colnames(lpcvtable) <- c("Factor1", "Factor2", "Communality", "Uniqueness")
+lpcvtable
+# Compute factor scores for the 2-factor model
+lpcvscore <- lifestd %*% solve(lpcv$loadings %*% t(lpcv$loadings) + diag(lpcv.uniq)) %*% lpcv$loadings
+lpcvscore
+qplot(lpcvscore[, 1], lpcvscore[, 2], label = abbreviate(rownames(life), 9), size = I(2.5), geom = "text",
+      xlab = "Factor 1", ylab = "Factor 2", main = "Varimax Rotated Factors")
+```
+
+## Maximum likelihood estimation of factor loadings
+```{r}
+# Compute p-values for tests for numbers of factors
+sapply(1:3, function(f) factanal(life, factors = f, method = "mle")$PVAL)
+
+# 1. Compute loadings for a 3-factor model with no rotation. Factor scores are not computed.
+factanal(life, factors = 3, method = "mle", rotation = "none")
+
+# 2. Apply the varimax rotation (default) to the factor loadings for the 3-factor model.  
+life_varimax <- factanal(life, factors = 3, method = "mle", rotation = "varimax", scores = "regression")
+life_varimax
+# Print all of the loading values
+print(loadings(life_varimax), cutoff = 1e-05)
+# Plot factor scores
+scores <- life_varimax$scores
+scores
+ggpairs(as.data.frame(scores), mapping = aes(label = abbreviate(rownames(life), 9)),
+        lower = list(continuous = function(data, mapping) ggplot(data, mapping) + geom_text(size = 2)))
+
+# 3. Compute varimax rotation for the 2-factor model
+life_varimax2 <- factanal(life, factors = 2, method = "mle", rotation = "varimax", scores = "regression")
+life_varimax2
+```
+
+## Pain Data
+
+## Exercise 1
+(a)
+```{r}
+paincor <- matrix(c(1.0, -0.04, 0.61, 0.45, 0.03, -0.29, -0.30, 0.45, 0.30,
+                    -0.04, 1.00, -0.07, -0.12, 0.49, 0.43, 0.30, -0.31, -0.17,
+                    0.61, -0.07, 1.00, 0.59, 0.03, -0.13, -0.24, 0.59, 0.32,
+                    0.45, -0.12, 0.59, 1.00, -0.08, -0.21, -0.19, 0.63, 0.37,
+                    0.03, 0.49, 0.03, -0.08, 1.00, 0.47, 0.41, -0.14, -0.24,
+                    -0.29, 0.43, -0.13, -0.21, 0.47, 1.00, 0.63, -0.13, -0.15,
+                    -0.30, 0.30, -0.24, -0.19, 0.41, 0.63, 1.00, -0.26, -0.29,
+                    0.45, -0.31, 0.59, 0.63, -0.14, -0.13, -0.26, 1.00, 0.40,
+                    0.30, -0.17, 0.32, 0.37, -0.24, -0.15, -0.29, 0.40, 1.00),
+                  ncol = 9, byrow = T)
+paincor
+
+
+painpc <- princomp(covmat = paincor, cor = T)
+qplot(1:ncol(paincor), painpc$sdev ^ 2, geom = "line",
+      xlab = "Component Number", ylab = "Component Variance (eigenvalue)", main = "Scree Plot")
+```
+
+3 PCs because the scree plot starts to flatten out after 3 PCs.
+
+(b)
+```{r}
+summary(painpc)
+```
+
+The first PC explains 0.3824117 of the total variation while PC2 explains 0.2144174 of the variation. 5 PCs are needed to explain at least 80% of the total variance.
+
+(c)
+```{r}
+painpc$loadingf <- painpc$loadings %*% diag(painpc$sdev)
+painpc$loadingf
+
+varpcf <- colSums(painpc$loadingf ^ 2)
+varpercent <- varpcf / sum(diag(paincor))
+cumpercent <- cumsum(varpercent)
+vartable <- rbind(varpcf, varpercent, cumpercent)
+rownames(vartable) <- c("SS loadings", "Proportion Var", "Cumulative Proportion")
+vartable
+```
+
+Factor 1: A contrast between assigning responsibility to the medical profession versus accepting personal responsibility for controlling pain.
+
+Factor 2: An average of the first 8 questions.
+
+0.5968291 of the total variance.
+
+(d)
+```{r}
+painpc.com <- diag(painpc$loadingf[, 1:2] %*% t(painpc$loadingf[, 1:2]))
+painpc.uniq <- diag(paincor) - painpc.com
+
+painpctable <- cbind(painpc$loadingf[, 1:2], painpc.com, painpc.uniq)
+colnames(painpctable) <- c("Factor1", "Factor2", "Communality", "Uniqueness")
+painpctable
+```
+
+Each column of factor loading matrix is the eigen vector times the square root of corresponding eigen-value.
+
+(e)
+```{r}
+painpc.2f <- varimax(painpc$loadingf[, 1:2])
+painpc.2f$loadings
+```
+
+- F1: an external responsibility for managing pain.
+
+- F2: a personal responsibility for managing pain.
+
+The rotated F1 is the external responsibility and the rotated F2 is the personal responsibility while the un-rotated F1 is the difference between the external and personal responsibility and the un-rotated F2 is the average.
+
+(f)
+```{r}
+painpc.4f <- varimax(painpc$loadingf[, 1:4])
+painpc.4f$loadings
+```
+
+The rotation with 4 factors is better because it explains more variability than the rotation with the 4 factors.
+
+(g)
+
+- F1: an external responsibility for managing pain.
+
+- F2: a personal (internal) responsibility for managing pain related to individuals actions.
+
+- F3: a personal (internal) responsibility for managing pain and not being careless.
+
+- F4: avoiding pain is a matter of luck.
+
+## Exercise 2
+(a)
+```{r}
+mlefact2 <- factanal(covmat = paincor, cor = T, factors = 2, n.obs = 123, method = "mle", rotation = "varimax")
+mlefact2
+```
+
+Factor1: 27.7\%, Factor2: 21.2\%.
+
+(b)
+```{r}
+summary(painpc)
+```
+
+First 2 factors: 48.9\%. First 2 PC: 59.6\%.
+
+(c)
+```{r}
+mlefact2$loadings
+mlefact2$uniquenesses
+mlefact2.com <- diag(mlefact2$correlation) - mlefact2$uniquenesses
+mlefact2.com
+factable <- cbind(mlefact2$loadings, mlefact2.com, mlefact2$uniquenesses)
+colnames(factable) <- c("Factor1", "Factor2", "Communality", "Uniqueness")
+factable
+```
+
+3rd variable has the largest proportion (68.2\%) of variation explained by 2-factor model. 9th variable has the least proportion (23.4\%) of variation. 
+
+(d)
+
+- F1: an external responsibility for managing pain.
+
+- F2: a personal responsibility for managing pain.
+
+(e)
+```{r}
+painpctable
+```
+
+The principal component method explains a larger proportion of the variances then the MLE.
+
+(f)
+```{r}
+sapply(1:5, function(f) factanal(covmat = paincor, cor = T, n.obs = 123, factors = f, method = "mle")$PVAL)
+```
+
+We need 3 factors based on the likelihood ratio tests because 3 factors are above 0.05.
+
+```{r}
+# Compute the residual matrix
+mlefact2.res <- mlefact2$correlation - (mlefact2$loadings %*% t(mlefact2$loadings) + diag(mlefact2$uniquenesses))
+mlefact2.res
+```
+

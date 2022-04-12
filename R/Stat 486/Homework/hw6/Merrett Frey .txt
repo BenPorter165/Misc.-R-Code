@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/751
+id: 751
+name: Merrett Frey
+gender: Male
+culture: Rivermen
+born: In 262 AC
+died: In 300 AC, at Near Oldstones
+alive: FALSE
+titles: 
+aliases: Merrett Muttonhead
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/712
+allegiances: House Frey of the Crossing
+books: A Game of Thrones, A Clash of Kings, A Feast for Crows, A Dance with Dragons
+povBooks: A Storm of Swords
+tvSeries: 
+playedBy: 

@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/529
+id: 529
+name: Jaime Lannister
+gender: Male
+culture: Westerlands
+born: In 266 AC, at Casterly Rock
+died: 
+alive: TRUE
+titles: Ser, Lord Commander of the Kingsguard, Warden of the East (formerly)
+aliases: The Kingslayer, The Lion of Lannister, The Young Lion, Cripple
+father: 
+mother: 
+spouse: 
+allegiances: House Lannister of Casterly Rock
+books: A Game of Thrones, A Clash of Kings
+povBooks: A Storm of Swords, A Feast for Crows, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5
+playedBy: Nikolaj Coster-Waldau

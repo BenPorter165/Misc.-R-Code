@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/148
+id: 148
+name: Arya Stark
+gender: Female
+culture: Northmen
+born: In 289 AC, at Winterfell
+died: 
+alive: TRUE
+titles: Princess
+aliases: Arya Horseface, Arya Underfoot, Arry, Lumpyface, Lumpyhead, Stickboy, Weasel, Nymeria, Squan, Saltb, Cat of the Canaly, Bets, The Blind Girh, The Ugly Little Girl, Mercedenl, Mercye
+father: 
+mother: 
+spouse: 
+allegiances: House Stark of Winterfell
+books: 
+povBooks: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Feast for Crows, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Maisie Williams

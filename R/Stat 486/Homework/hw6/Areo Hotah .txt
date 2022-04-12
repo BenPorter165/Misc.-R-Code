@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1166
+id: 1166
+name: Areo Hotah
+gender: Male
+culture: Norvoshi
+born: In 257 AC or before, at Norvos
+died: 
+alive: TRUE
+titles: Captain of the Guard at Sunspear
+aliases: 
+father: 
+mother: 
+spouse: 
+allegiances: House Nymeros Martell of Sunspear
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords
+povBooks: A Feast for Crows, A Dance with Dragons
+tvSeries: Season 5, Season 6
+playedBy: DeObia Oparei

@@ -1,0 +1,144 @@
+---
+title: 'Homework #2'
+author: "Ben Porter"
+date: "2/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+```{r}
+scores = c(9.3, 8.7, 9.5, 10, 9, 8.9)
+scores[-c(which.min(scores), which.max(scores))]
+ave = mean(scores[-c(which.min(scores), which.max(scores))])
+ave
+
+```
+
+## Question 2
+```{r}
+ndays = rep(365, times = 21)
+ndays[1] = 366
+ndays[5] = 366
+ndays[9] = 366
+ndays[13] = 366
+ndays[17] = 366
+ndays[21] = 366
+ndays
+```
+
+## Question 3
+```{r}
+x = ((-1)^(1:500+1))/1:500
+head(x)
+sum(x)
+
+```
+
+This series converges and as i increases, each value gets closer and closer to 0, so the bigger the number, the better approximation.
+
+## Question 4
+```{r}
+Chris_bmi = 70 / 1.8^2
+Mary_bmi = 49 / 1.65^2
+
+bmi = cbind(Chris_bmi, Mary_bmi)
+bmi
+
+```
+
+## Question 5
+```{r}
+x = c(1, 1, 4, 6, 4, 7, 5, 9)
+
+#a.
+sort(x)
+
+#b.
+rank(x, ties.method = "min")
+
+#c.
+unique(x)
+
+#d.
+y = x[1]
+count <- 0
+for (i in x) {
+if(i < y)  
+  count = count+1
+y = i
+}
+print(count)
+
+#e.
+b = 5
+c = order(abs(x-b))
+d = c[1:4]
+e = x[c(d)]
+mean(e)
+
+#f.
+f = sort(abs(x-b))
+g = f[f<=2]
+h = c[1:length(g)]
+i = x[c(d)]
+mean(i)
+```
+
+## Question 6
+```{r}
+trunc(.5 + -2:4)
+
+round(.5 + -2:4)
+```
+The reason that the outputs are different is because trunc always rounds toward 0 and round rounds normally, or to the decimal place specified which is 0 by default, and rounds fives to the even number.\
+
+##Penguins
+```{r}
+library(palmerpenguins)
+```
+
+## Question 1
+```{r}
+colnames(penguins)
+dim(penguins)
+summary(penguins)
+```
+
+## Question 2
+```{r}
+head(order(penguins$body_mass_g))
+```
+
+## Question 3
+```{r}
+large = penguins[c(315, 59, 65, 55, 99),]
+large$species
+```
+
+## Question 4
+```{r}
+mean(penguins$body_mass_g, na.rm = TRUE)
+median(penguins$body_mass_g, na.rm = TRUE)
+
+```
+
+## Question 5
+```{r}
+#a.
+hist(penguins$body_mass_g, main = "Histogram of Body Mass", xlab = "Body Mass", ylab = "Frequency")
+
+#b.
+boxplot(penguins$body_mass_g ~ penguins$species, xlab = "Species", ylab = "Body Mass")
+
+#c.
+barplot(table(penguins$species), main = "Number of Penguins Per Species", xlab = "Species", ylab = "Number of Penguins")
+
+#d.
+plot(penguins$flipper_length_mm, penguins$body_mass_g, col = penguins$sex, main = "Body Mass vs. Flipper Length for Each Sex", xlab = "Flipper Length", ylab = "Body Mass")
+
+```
+

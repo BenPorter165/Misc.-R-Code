@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/150
+id: 150
+name: Asha Greyjoy
+gender: Female
+culture: Ironborn
+born: In 275 AC or 276 AC, at Pyke
+died: 
+alive: TRUE
+titles: Princess, Captain of the Black Wind, Conqueror of Deepwood Motte
+aliases: Esgred, The Kraken's Daughter
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/1372
+allegiances: House Greyjoy of Pyke, House Ironmaker
+books: A Game of Thrones, A Clash of Kings
+povBooks: A Feast for Crows, A Dance with Dragons
+tvSeries: Season 2, Season 3, Season 4
+playedBy: Gemma Whelan

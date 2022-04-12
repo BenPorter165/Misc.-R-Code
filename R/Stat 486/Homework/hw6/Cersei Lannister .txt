@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/238
+id: 238
+name: Cersei Lannister
+gender: Female
+culture: Westerman
+born: In 266 AC, at Casterly Rock
+died: 
+alive: TRUE
+titles: Light of the West, Queen Dowager, Protector of the Realm, Lady of Casterly Rock, Queen Regent
+aliases: 
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/901
+allegiances: House Lannister of Casterly Rock
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords
+povBooks: A Feast for Crows, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Lena Headey

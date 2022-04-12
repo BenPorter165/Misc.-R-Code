@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/168
+id: 168
+name: Barristan Selmy
+gender: Male
+culture: Westeros
+born: In 237 AC
+died: 
+alive: TRUE
+titles: Ser, Hand of the Queen
+aliases: Barristan the Bold, Arstan Whitebeard, Ser Grandfather, Barristan the Old, Old Ser
+father: 
+mother: 
+spouse: 
+allegiances: House Selmy of Harvest Hall, House Targaryen of King's Landing
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Feast for Crows, The World of Ice and Fire
+povBooks: A Dance with Dragons
+tvSeries: Season 1, Season 3, Season 4, Season 5
+playedBy: Ian McElhinney

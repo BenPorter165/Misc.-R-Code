@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1295
+id: 1295
+name: Cressen
+gender: Male
+culture: 
+born: In 219 AC or 220 AC
+died: In 299 AC, at Dragonstone
+alive: FALSE
+titles: Maester
+aliases: 
+father: 
+mother: 
+spouse: 
+allegiances: 
+books: A Storm of Swords, A Feast for Crows
+povBooks: A Clash of Kings
+tvSeries: Season 2
+playedBy: Oliver Ford

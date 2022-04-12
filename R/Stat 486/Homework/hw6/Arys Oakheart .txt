@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/149
+id: 149
+name: Arys Oakheart
+gender: Male
+culture: Reach
+born: At Old Oak
+died: In 300 AC, at the Greenblood
+alive: FALSE
+titles: Ser
+aliases: 
+father: 
+mother: 
+spouse: 
+allegiances: House Oakheart of Old Oak
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+povBooks: A Feast for Crows
+tvSeries: 
+playedBy: 

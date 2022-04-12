@@ -1,0 +1,114 @@
+---
+title: "HW 7"
+author: "Ben Porter"
+date: "3/31/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+# a.
+# i.
+```{r}
+library(purrr)
+n <- 100
+min <- -10
+max <- 10
+X <- runif(n, min, max)
+hist(X)
+```
+
+# ii.
+```{r}
+n <- 100
+alpha <- 1
+beta <- 1
+X <- rbeta(n, alpha, beta)
+hist(X)
+```
+
+# iii.
+```{r}
+n <- 100
+shape <- 0.25
+scale <- 2
+X <- rgamma(100, shape, scale = scale)
+hist(X)
+```
+Shape = 0.25 and scale = 2 because:
+mean = 0.5 = shape(scale) -> shape = 0.5/scale
+variance = 1 = shape(scale^2) -> 1 = (0.5/scale)(scale^2) ->
+1/0.5 = 2 = scale;
+shape(2) = 0.5 -> shape = 0.25;
+
+
+
+# iv.
+```{r}
+n <- 100
+trials <- 4
+p <- 0.5
+X <- rbinom(n, trials, p)
+hist(X)
+```
+
+# v.
+```{r}
+n <- 100
+geom_p <- 0.2
+nj <- rgeom(n, geom_p)
+binom_p <- 0.5
+X <- rbinom(n, nj, binom_p)
+hist(X)
+```
+
+# b.
+```{r}
+set.seed(2)
+n <- 30
+df <- 2
+X <- rchisq(n, df)
+```
+
+
+# i.
+```{r}
+hist(X, freq = FALSE)
+XX <- seq(0, 7, length.out = 100)
+lines(XX, dchisq(XX, df))
+```
+
+# ii.
+```{r}
+Fn <- ecdf(X)
+plot(Fn)
+lines(XX, pchisq(XX, df))
+```
+
+# iii.
+```{r}
+deciles <- seq(0.1, 0.9, by = 0.1)
+empirical_deciles <- quantile(X, probs = deciles)
+true_deciles <- qchisq(deciles, df)
+plot(empirical_deciles, true_deciles)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

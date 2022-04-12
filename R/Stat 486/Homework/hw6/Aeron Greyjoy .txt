@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/60
+id: 60
+name: Aeron Greyjoy
+gender: Male
+culture: Ironborn
+born: In or between 269 AC and 273 AC, at Pyke
+died: 
+alive: TRUE
+titles: Priest of the Drowned God, Captain of the Golden Storm (formerly)
+aliases: The Damphair, Aeron Damphair
+father: 
+mother: 
+spouse: 
+allegiances: House Greyjoy of Pyke
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+povBooks: A Feast for Crows
+tvSeries: Season 6
+playedBy: Michael Feast

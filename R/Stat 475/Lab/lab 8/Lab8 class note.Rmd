@@ -1,0 +1,96 @@
+---
+title: "Lab8"
+output:
+  html_document:
+    df_print: paged
+---
+
+Ben Porter
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data on Ames Livability
+```{r}
+towns <- read.csv("towns2.csv")
+dim(towns)
+str(towns)
+head(towns)
+towns$ames <- 0
+towns$ames[52] <- 1
+```
+
+## Exercise 1
+```{r}
+library(ggplot2)
+library(reshape2)
+
+towns.melt <- melt(towns, id.vars = c(1:3, 14), measure.vars = 4:13)
+qplot(value, Score, data = towns.melt, geom = "point") +
+  facet_wrap(~ variable) +
+  labs(x = NULL)
+cor(towns$Score, towns[, 4:13])
+```
+
+The variable Climate Diversions has the smallest correlation with livability score, house has a negative correlation and Urban has a low correlation. The rest of the variables have moderate correlations with livability score.
+
+## Exercise 2
+```{r}
+library(GGally)
+ggpairs(towns[, 4:14], upper = list(continuous = wrap("cor", size = 2)),
+        lower = list(continuous = wrap("points", stroke = 0, size = .5)))
+sapply(towns[, 3:13], sd)
+qplot(variable, value, data = towns.melt, geom = "boxplot") +
+  labs(x = NULL, y = NULL)
+```
+
+The variation for each variable is quite different so it is necessary to use the correlation matrix, or standardize the data, before doing a principal component analysis to account for this.
+
+## Exercise 3
+```{r}
+towns.pca <- prcomp(towns[, 3:13], scale. = T)  # include Population
+summary(towns.pca)
+round(towns.pca$rotation, 4)
+qplot(1:11, towns.pca$sdev ^ 2, geom = c("point", "line"),
+      xlab = "No. of PCs", ylab = "Component Variance (eigenvalue)", main = "Scree Plot")
+```
+
+a.
+
+You would need to use 6 PCs in order to explain 80% of the total variation.
+
+b.
+
+```{r}
+cumsum(towns.pca$sdev ^ 2)/11
+
+```
+
+
+## Exercise 4
+
+a.
+
+PC1: The average of Climate, House, Urban, minus the average of Diversion, Economic, Education, Community, Health, Safety, Transportation.
+
+PC2: The average of Population, Climate, Education, Safety, and Urban, minus the average of Economic, Health, and House.
+
+b.
+
+If you want to explain 67% of the variation, You would use 4 PCs because the Cumulative Proportion at PC4 is 67.09% as well as the elbow in the scree plot being at PC4 so using 4 PCs describes a lot of variability while keeping the total number of PCs low.
+
+## Exercise 5
+```{r}
+head(towns$City[order(towns$Score, decreasing = T)])
+head(towns$City[order(towns.pca$x[, 1], decreasing = T)])
+qplot(towns$Score, -towns.pca$x[, 1], col = as.factor(towns$ames), asp = 1) +
+  labs(x = "Score", y = "negative PC1 score", color = "Ames")
+cor(towns$Score, -towns.pca$x[, 1])
+```
+
+Mount.Vernon.WA would be rated first using the score variable.
+
+Albemarle.NC would be rated first using the first PC.
+
+While the 2 methods give different cities for the top 6 cities, they do give somewhat similar ratings with Score and PC1 having a moderate correlation of 0.55311.

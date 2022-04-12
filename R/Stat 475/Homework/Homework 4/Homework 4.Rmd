@@ -1,0 +1,189 @@
+---
+title: "Homework 4"
+author: "Ben Porter"
+date: "10/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Due: Friday Oct 29** 
+
+1. The data "iris.csv" contain a sample of 3 classes of iris. There are four variables: sepal length in cm, sepal width in cm, petal length in cm, petal width in cm.  
+ a. Conduct principal component analysis (PCA) on this data set. Output the eigenvalues and the PC loadings for each PC. 
+```{r}
+library(ggplot2)
+library(GGally)
+
+iris <- read.csv("iris.csv")
+head(iris)
+
+
+irispc <- prcomp(iris[1:4], scale = T, center = T)
+summary(irispc)
+print(irispc)
+```
+
+Eigenvalues:
+
+```{r}
+iriseigenvalues = irispc$sdev^2
+print(iriseigenvalues)
+```
+
+ b. Interpret the meaning of each PC.  
+
+PC1: The average of sepal.length, petal.length, and petal.width minus the average of sepal.width.
+ 
+PC2: The negative average of sepal.length, sepal.width, petal.length, and petal.width.
+ 
+PC3: The average of sepal.length minus the average of sepal.width, petal.length, and petal.width.
+
+PC4: The average of sepal.length and petal.width minus the average of sepal.width and petal.length.
+ 
+ c. Make a scree plot.  
+ 
+```{r}
+qplot(1:4, irispc$sdev ^ 2, geom = c("point", "line"),
+      xlab = "No. of PCs", ylab = "Component Variance (eigenvalue)", main = "Scree Plot")
+
+```
+ 
+ 
+ d. Based on the scree plot, proportion of variation explained How many PCs should be enough to represent the original data?  
+ 
+2 PCs should be enough, as PC2 is where the scree plot starts to flatten out and PC1 and PC2 explain 95.80% of the variation.
+ 
+ e. Output the PC scores for the first two PCs.  
+```{r}
+print(irispc$x[, 1:2])
+```
+
+ f. Make a scatter plot of the PC scores, colored by the three classes. Can the first two PCs separate those classes of iris?  
+```{r}
+
+iris.class <- as.factor(ifelse(iris[, 5] == c("Iris-setosa"), 1, ifelse(iris[, 5] == c("Iris-versicolor"), 2, 3)))
+
+qplot(irispc$x[, 1], irispc$x[, 2], color = iris.class, label = iris.class, geom = "text",
+      show.legend = T, xlab = "PC1", ylab = "PC2")
+```
+
+Yes, they can because all 3 classes have distinct behaviors in each of the PCs, with Iris-setosa, or 1, having the lowest PC1 and the second lowest PC2, Iris-versicolor, or 2, having the second lowest PC1 and the largest PC2, and Iris-virginica, or 3, having the largest PC1 and the lowest PC2.
+
+
+
+2. The data "USOpen-men-2013.csv" contain the match statistics for the tennis tournament (US Opening Men) at 2013. Each row is for one match. The meaning of the variables are provided below.  
+
+ - Result: Result of the match (0/1) - Referenced on Player 1 is Result = 1 if Player 1 wins (FNL.1>FNL.2)  
+ - FNL.1: Final Number of Games Won by Player 1  
+ - FNL.2: Final Number of Games Won by Player 2   
+ - FSP.1: First Serve Percentage for player 1  
+ - FSW.1: First Serve Won by player 1  
+ - SSP.1: Second Serve Percentage for player 1  
+ - SSW.1: Second Serve Won by player 1  
+ - ACE.1: Aces won by player 1  
+ - DBF.1: Double Faults committed by player 1   
+ - BPC.1: Break Points Created by player 1  
+ - BPW.1: Break Points Won by player 1  
+ - NPA.1: Net Points Attempted by player 1   
+ - NPW.1: Net Points Won by player 1   
+ - The meaning of the variables for player 2 is the same. 
+
+ a. Remove the observations with missing values.  
+ 
+```{r}
+USOpen <- read.csv("USOpen-men-2013.csv")
+USOpencomplete = USOpen[complete.cases(USOpen), ]
+USOpencomplete1 = USOpencomplete[4:25]
+USOpencomplete2 = USOpencomplete1
+USOpencomplete2 = subset(USOpencomplete1, select = -c(SSP.1,SSP.2) )
+
+```
+
+We remove SSP.1 and SSP.2 because they are already accounted for with FSP.1 and FSP.2 because SSP.1 = 100 - FSP.1 and SSP.2 = 100 - FSP.2.
+ 
+ b. Conduct PCA on all the variables except the first three variables.   
+ 
+```{r}
+USOpenpc <- prcomp(USOpencomplete2, scale = T, center = T)
+summary(USOpenpc)
+
+```
+
+
+
+ c. Make a scree plot. How many PCs should be selected? What is the proportion of variation explained by the selected PCs?
+
+```{r}
+qplot(1:20, USOpenpc$sdev ^ 2, geom = c("point", "line"),
+      xlab = "No. of PCs", ylab = "Component Variance (eigenvalue)", main = "Scree Plot")
+```
+
+5 PCs should be enough, as PC5 is where the scree plot starts to flatten out and the 5 PCs explain 75.13% of the variation.
+
+ d. Obtain the factor loadings in the factor analysis by the PCA method. Output the factor loadings for the selected factors.  
+ 
+```{r}
+USOpenpc$loadingf <- USOpenpc$rotation %*% diag(USOpenpc$sdev)
+USOpenpc$loadingf
+```
+
+ 
+ e. Conduct Varimax rotation of the loadings. Interpret the meaning of the rotated factors (by Varimax).  
+ 
+```{r}
+USOpenpc.2f <- varimax(USOpenpc$loadingf[, 1:5])
+USOpenpc.2f$loadings
+```
+
+F1: This is the negative average of FNL1, FNL2, FSP.1, FSW.1, SSW.1, ACE.1, BPC.1, BPW.1, NPA.1, NPW.1, FSP.2, SSW.2, ACE.2, BPW.2, NPA.2, and NPW.2.
+
+F2: This is the average of FNL1, SSW.1, BPC.1, BPW.1, NPA.1, SSW.2, DBF.2, and NPW.2 minus the average of FNL2, ACE.1, FSP.2, FSW.2, BPC.2.
+
+F3: This is the average of FSP.1, BPC.1, and FSP.2 minus the average of FNL2, FSW.1, SSW.1, ACE.1, DBF.1, NPA.1, NPW.1, FSW.2, SSW.2, ACE.2, DBF.2, BPC.2, BPW.2, NPA.2, and NPW.2.
+
+F4: This is the average of FNL1, ACE.1, BPC.1, BPW.1, and FSP.2,  minus the average of FNL2, DBF.1, NPW.1, SSW.2, ACE.2, BPC.2, BPW.2, and NPA.2.
+
+F5: This is the average of FSP.1 and ACE.1 minus the average of FNL1, FSW.1, SSW.1, BPC.1, BPW.1, NPA.1, NPW.1, FSP.2, FSW.2, SSW.2, NPA.2, and NPW.2.
+
+ 
+ f. Conduct maximum likelihood estimation (MLE) for the factor model. Output the pvalues for testing the numbers of factors by MLE. How many factors should be chosen. Is this result the same as the number of factors chosen by PCA?
+ 
+```{r}
+mlefact2 <- factanal(USOpencomplete2, cor = T, factors = 6, n.obs = 88, method = "mle", rotation = "varimax")
+mlefact2
+```
+
+6 factors should be chosen because even though the p-value rejects the null hypothesis(1.97e-29 < 0.05) that 6 factors are sufficient, we also have to consider the interpretations and proportion of variance that is explained by each factor. 6 factors cover 0.729 of the cumulative variance, with the proportion of variance for each factor still being at least 0.06. 6 factors also keeps both the interpretations of the factors still relevant and the simplicity of the model, so 6 factors should be chosen.
+
+This is not the same number of factors chosen by the PCA, this contains 1 more factor.
+
+ 
+ g. Given the number of factors chosen in the previous question, output the Uniquenesses, factor loadings (the default rotation in MLE is "Varimax") and the proportion of variance explained from MLE. 
+ 
+```{r}
+mlefact2.com <- diag(mlefact2$correlation) - mlefact2$uniquenesses
+
+
+factable <- cbind(mlefact2$loadings, mlefact2.com, mlefact2$uniquenesses)
+colnames(factable) <- c("Factor1", "Factor2", "Factor3", "Factor4", "Factor5", "Factor6", "Communality", "Uniqueness")
+factable
+```
+
+ 
+ h. Explain the meaning of the factors.  
+
+
+F1: This is the average of FNL1, FNL2, FSW.1, SSW.1 ACE.1 DBF.1 BPW.1 NPA.1 NPW.1 FSW.2 SSW.2 ACE.2 DBF.2 BPW.2 NPA.2 NPW.2 minus the average of FSP.1, BPC.1.
+
+F2: This is the average of  FNL1, FSW.1 SSW.1 BPC.1 BPW.1 NPA.1 NPW.1, SSW.2, DBF.2 NPW.2 minus the average of FNL2, FSP.2, FSW.2.
+
+F3: This is the average of FNL2, DBF.1 NPW.1 FSW.2 SSW.2 ACE.2 BPC.2 BPW.2 NPA.2 minus the average of FNL1, FSP.1, ACE.1, BPC.1.
+
+F4: This is the average of FSP.1 FSW.1 SSW.1 ACE.1 BPW.1 NPA.1 NPW.1 FSP.2 FSW.2 SSW.2 BPW.2 NPA.2 NPW.2 minus the average of DBF.1.
+
+F5: This is the average of FNL1 FSW.1 SSW.1  NPA.1 NPW.1 FSW.2 SSW.2 ACE.2 DBF.2 NPA.2 NPW.2 minus the average of ACE.1.
+
+F6: This is the average of FSP.1 FSW.1 minus the average of SSW.1 DBF.1 BPC.2.

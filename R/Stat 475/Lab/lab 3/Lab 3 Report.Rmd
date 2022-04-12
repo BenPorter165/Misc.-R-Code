@@ -1,0 +1,109 @@
+---
+title: "Lab 3 Report"
+output: html_document
+---
+
+Ben Porter
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 1
+
+(a)
+
+```{r}
+library(ggplot2)
+library(GGally)
+
+music <- read.csv("music-plusnew-sub.csv", row.names = 1, stringsAsFactors = FALSE)
+
+music.sub <- subset(music, Type == "Rock" | Type == "Classical")
+
+ggplot(music.sub, aes(x = LAve)) +
+  geom_histogram(binwidth = 10) +
+  facet_wrap(~ Type, ncol = 1)
+```
+Classical is centered at a higher value than Rock, as well as Classical is right-skewed and Rock is more left-skewed and Classical has a larger range than Rock.
+
+(b)
+
+```{r}
+ggplot(music.sub, aes(x = LVar, y = LAve, color = Type)) +
+  geom_point()
+```
+Rock: large var of amplitude, small average. two groups.
+
+Classical: small var of amplitude, large avg of amplitude.
+
+(c)
+```{r}
+music.sub2 <- subset(music, Type == "Rock" | Type == "Classical" | Type == "New wave")
+ggparcoord(music.sub2, columns = c(4, 3, 5, 6, 7), groupColumn = "Type",
+           title = "Parallel Coordinate Plot: Music Types")
+```
+
+Rock: large var, max, and ener. low freq.
+
+Classical: large avg and freq. Small var, max and ener.
+
+New wave: Small avg, var and freq.
+
+Rock can be subdivided into 2 types, because there seems to be 2 distinct groups within Rock.
+
+## Exercise 2
+
+(a)
+```{r}
+bodyfat <- read.csv("bodyfat.csv")
+
+ggpairs(bodyfat[, 1:4])
+```
+
+2 outliers.
+
+(b)
+```{r}
+bf.sub <- subset(bodyfat, Heightinches > 60 & Weightlbs < 300)
+ggpairs(bf.sub, columns = 1:4)
+```
+
+moderate/strong positive relationship between weight and %bodyfat, and weight and height. No other obvious relationship between other variables.
+
+(c)
+```{r}
+ggparcoord(bf.sub, 5:14)
+```
+
+Two outliers which have large ankle circumference.
+
+(d)
+```{r}
+bf.sub2 <- subset(bf.sub, AnkleCircm < 33)
+ggparcoord(bf.sub2, 5:14)
+```
+
+All variables bounce around their centers. No obvious structure.
+
+## Exercise 3
+
+(a)
+```{r}
+pisamath <- read.csv("pisamathmeans.csv")
+summary(pisamath)
+
+pisamath2 <- subset(pisamath, !is.na(acc))
+ggpairs(pisamath2, mapping = aes(color = Gender, alpha = 0.5))
+
+```
+
+4978 missing values
+
+(b)
+```{r}
+ggpairs(pisamath2, mapping = aes(color = Gender, alpha = 0.5))
+```
+
+Males and females have similar distributions for all variables. Strong positive linear relationship between all pairs of 7 test scores.
+

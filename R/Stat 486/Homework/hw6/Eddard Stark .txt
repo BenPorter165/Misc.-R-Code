@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/339
+id: 339
+name: Eddard Stark
+gender: Male
+culture: Northmen
+born: In 263 AC, at Winterfell
+died: In 299 AC, at Great Sept of Baelor in King's Landing
+alive: FALSE
+titles: Lord of Winterfell, Warden of the North, Hand of the King, Protector of the Realm, Regent
+aliases: Ned, The Ned, The Quiet Wolf
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/232
+allegiances: House Stark of Winterfell
+books: A Clash of Kings, A Storm of Swords, A Feast for Crows, A Dance with Dragons, The World of Ice and Fire
+povBooks: A Game of Thrones
+tvSeries: Season 1, Season 6
+playedBy: Sean Bean, Sebastian Croft, Robert Aramayo

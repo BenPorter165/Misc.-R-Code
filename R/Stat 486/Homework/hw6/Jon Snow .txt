@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/583
+id: 583
+name: Jon Snow
+gender: Male
+culture: Northmen
+born: In 283 AC
+died: 
+alive: TRUE
+titles: Lord Commander of the Night's Watch
+aliases: Lord Snow, Ned Stark's Bastard, The Snow of Winterfell, The Crow-Come-Over, The 998th Lord Commander of the Night's Watch, The Bastard of Winterfell, The Black Bastard of the Wall, Lord Crow
+father: 
+mother: 
+spouse: 
+allegiances: House Stark of Winterfell
+books: A Feast for Crows
+povBooks: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Kit Harington

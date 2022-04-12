@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/605
+id: 605
+name: Kevan Lannister
+gender: Male
+culture: 
+born: In 244 AC
+died: In 300 AC, at King's Landing
+alive: FALSE
+titles: Ser, Master of laws, Lord Regent, Protector of the Realm
+aliases: 
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/327
+allegiances: House Lannister of Casterly Rock
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Feast for Crows
+povBooks: A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 5, Season 6
+playedBy: Ian Gelder

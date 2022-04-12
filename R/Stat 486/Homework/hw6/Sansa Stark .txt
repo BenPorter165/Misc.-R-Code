@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/957
+id: 957
+name: Sansa Stark
+gender: Female
+culture: Northmen
+born: In 286 AC, at Winterfell
+died: 
+alive: TRUE
+titles: Princess
+aliases: Little bird, Alayne Stone, Jonquil
+father: 
+mother: 
+spouse: https://www.anapioficeandfire.com/api/characters/1052
+allegiances: House Baelish of Harrenhal, House Stark of Winterfell
+books: A Dance with Dragons
+povBooks: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Feast for Crows
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Sophie Turner

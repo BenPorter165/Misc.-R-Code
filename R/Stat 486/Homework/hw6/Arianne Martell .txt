@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/130
+id: 130
+name: Arianne Martell
+gender: Female
+culture: Dornish
+born: In 276 AC, at Sunspear
+died: 
+alive: TRUE
+titles: Princess of Dorne
+aliases: 
+father: 
+mother: 
+spouse: 
+allegiances: House Nymeros Martell of Sunspear
+books: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+povBooks: A Feast for Crows
+tvSeries: 
+playedBy: 

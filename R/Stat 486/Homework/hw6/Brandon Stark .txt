@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/208
+id: 208
+name: Brandon Stark
+gender: Male
+culture: Northmen
+born: In 290 AC, at Winterfell
+died: 
+alive: TRUE
+titles: Prince of Winterfell
+aliases: Bran, Bran the Broken, The Winged Wolf
+father: 
+mother: 
+spouse: 
+allegiances: House Stark of Winterfell
+books: A Feast for Crows
+povBooks: A Game of Thrones, A Clash of Kings, A Storm of Swords, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 6
+playedBy: Isaac Hempstead-Wright

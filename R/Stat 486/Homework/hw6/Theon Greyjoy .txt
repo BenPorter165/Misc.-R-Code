@@ -1,0 +1,18 @@
+url: https://www.anapioficeandfire.com/api/characters/1022
+id: 1022
+name: Theon Greyjoy
+gender: Male
+culture: Ironborn
+born: In 278 AC or 279 AC, at Pyke
+died: 
+alive: TRUE
+titles: Prince of Winterfell, Captain of Sea Bitch, Lord of the Iron Islands (by law of the green lands)
+aliases: Prince of Fools, Theon Turncloak, Reek, Theon Kinslayer
+father: 
+mother: 
+spouse: 
+allegiances: House Greyjoy of Pyke
+books: A Game of Thrones, A Storm of Swords, A Feast for Crows
+povBooks: A Clash of Kings, A Dance with Dragons
+tvSeries: Season 1, Season 2, Season 3, Season 4, Season 5, Season 6
+playedBy: Alfie Allen

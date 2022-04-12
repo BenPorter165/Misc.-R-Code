@@ -1,0 +1,223 @@
+---
+title: "Assignment 3"
+author: "Ben Porter"
+date: "10/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Assignment 3
+
+###1A.
+```{r}
+library(car)
+library(biotools)
+library(GGally)
+library(ggplot2)
+library(DescTools)
+
+
+rabbits2 <- read.csv("rabbits2.csv")
+head(rabbits2)
+
+
+rabbits2a = rabbits2
+rabbits = rabbits2a[2:7]
+rabbits2a$insulin <- as.factor(rabbits2a$insulin)
+
+rabbitsgroup1 = rabbits2a[rabbits2a[,2]=="1", -2]
+rabbitsgroup2 = rabbits2a[rabbits2a[,2]=="2", -2]
+
+rabbitsgroup1a = rabbitsgroup1[, -1]
+rabbitsgroup2a = rabbitsgroup2[, -1]
+
+group1profile = c(1, colMeans(rabbitsgroup1a))
+group2profile = c(2, colMeans(rabbitsgroup2a))
+
+rabbits.data = data.frame(rbind(group1profile, group2profile))
+colnames(rabbits.data) = c("insulin", "X1", "X2", "X3", "X4", "X5")
+rabbits.data$insulin <- as.factor(rabbits.data$insulin)
+
+ggparcoord(rabbits.data, columns=2:6, groupColumn="insulin", 
+             title="")
+
+
+
+
+
+```
+
+They do not look to be the same for each of the manufacturers. 
+
+###1B.
+```{r}
+
+
+
+T2result = HotellingsT2Test(rabbitsgroup1a,rabbitsgroup2a)
+T2result
+
+T2 = (0.39966*(5*(53 - 1)))/(53-5)
+T2
+```
+
+Scaled T2 = 0.39966
+
+T2 = 2.164825
+
+Degrees of Freedom of 5 and 48
+
+p-value = 0.8466 > 0.05, cannot reject H0. The mean vectors(profiles) of the 2 manufacturers are equal to each other.
+
+
+###1C.
+```{r}
+boxM(rabbits[2:6], rabbits$insulin)
+
+
+xbar1 <- colMeans(rabbitsgroup1a)
+
+xvar1 <- var(rabbitsgroup1a)
+
+xbar2 <- colMeans(rabbitsgroup2a)
+
+xvar2 <- var(rabbitsgroup2a)
+
+# Compute sample sizes and number of variables
+n1 <- nrow(rabbitsgroup1a)
+n2 <- nrow(rabbitsgroup2a)
+p <- ncol(rabbitsgroup1a)
+
+# Enter the confidence level
+level <- 0.95
+
+# Compute degrees of freedom and the multipliers
+df1 <- p
+df2 <- n1 + n2 - p - 1
+df3 <- n1 + n2 - 2
+c_T2 <- sqrt((n1 + n2 - 2) * p * qf(level, df1, df2) / (n1 + n2 - p - 1))
+levelt <- 1 - (1 - level) / 2
+levelb <- 1 - (1 - level) / (2 * p)
+c_bon <- qt(levelb, df3)
+
+# Compute pooled covariance matrix 
+vpool <- ((n1 - 1) * xvar1 + (n2 - 1) * xvar2) / (n1 + n2 - 2)
+
+# Compute Bonferroni limits
+lower_limit <- (xbar1 - xbar2) - c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+upper_limit <- (xbar1 - xbar2) + c_bon * sqrt(diag(vpool) * ((1 / n1) + (1 / n2)))
+rbind(lower_limit, upper_limit)
+```
+
+p-value (0.09674) > 0.05, so use pooled covariance.
+
+There is no significant difference between the 2 manufacturers for any of X1, X2, X3, X4, and X5.
+
+###1D.
+```{r}
+library(mvShapiroTest)
+mvShapiro.Test(as.matrix(rabbits2[3:7]))
+
+```
+
+p-value: 3.047e-07 < 0.05, so we reject H0. Data are not from 5d normal distribution.
+
+
+###2A.
+
+```{r}
+crudeoil <- read.csv("crudeoil.csv")
+
+crudeoil1 = crudeoil
+crudeoil1$Zone <- as.factor(crudeoil1$Zone)
+
+fit.lm <- lm(cbind(X1, X2, X3, X4, X5) ~ Zone, data = crudeoil1)
+
+fit.manova <- Manova(fit.lm)
+summary(fit.manova)
+
+```
+
+wilks: 0.116048
+
+F: 18.96779
+
+df: 10 and 98
+
+p-value: 2.22e-16
+
+p-value < 0.05, reject H0. At least two groups have different population mean on 1 of 5 variables.
+
+
+###2B.
+```{r}
+boxM(crudeoil1[, -1], crudeoil1$Zone)
+
+# Compute sample sizes and number of variables
+n1 <- nrow(crudeoil1[crudeoil1$Zone == 1, -1])
+n2 <- nrow(crudeoil1[crudeoil1$Zone == 2, -1])
+n3 <- nrow(crudeoil1[crudeoil1$Zone == 3, -1])
+p <- ncol(crudeoil1[, -1])
+g <- 3
+
+# Enter the confidence level
+level <- 0.95
+
+# Compute Bonferroni Confidence Intervals
+m <- p * g * (g - 1) / 2  # p dimensions, g (g-1) / 2 combinations (choose 2 out of g)
+levelb <- 1 - ((1 - level) / (2 * m))
+df <- n1 + n2 + n3 - g
+c_bon <- qt(levelb, df)
+
+# Compute Bonferroni limits
+xbar1 <- colMeans(crudeoil1[crudeoil1$Zone == 1, -1])
+xbar2 <- colMeans(crudeoil1[crudeoil1$Zone == 2, -1])
+xbar3 <- colMeans(crudeoil1[crudeoil1$Zone == 3, -1])
+
+var1 <- var(crudeoil1[crudeoil1$Zone == 1, -1])
+var2 <- var(crudeoil1[crudeoil1$Zone == 2, -1])
+var3 <- var(crudeoil1[crudeoil1$Zone == 3, -1])
+
+lower_limit_1v2_unpool <- (xbar1 - xbar2) - c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+upper_limit_1v2_unpool <- (xbar1 - xbar2) + c_bon * sqrt(diag(var1) / n1 + diag(var2) / n2)
+
+lower_limit_1v3_unpool <- (xbar1 - xbar3) - c_bon * sqrt(diag(var1) / n1 + diag(var3) / n3)
+upper_limit_1v3_unpool <- (xbar1 - xbar3) + c_bon * sqrt(diag(var1) / n1 + diag(var3) / n3)
+
+lower_limit_2v3_unpool <- (xbar2 - xbar3) - c_bon * sqrt(diag(var2) / n2 + diag(var3) / n3)
+upper_limit_2v3_unpool <- (xbar2 - xbar3) + c_bon * sqrt(diag(var2) / n2 + diag(var3) / n3)
+
+rbind(lower_limit_1v2_unpool, upper_limit_1v2_unpool,
+      lower_limit_1v3_unpool, upper_limit_1v3_unpool,
+      lower_limit_2v3_unpool, upper_limit_2v3_unpool)
+
+
+
+
+```
+
+p-value (0.01542) < 0.05, so use individual covariance.
+
+There is no difference in mean vanadium, iron, beryllium, and saturated hydrocarbons levels for crude oil extracted from the Wilhelm and Sub-Mulinia zones.
+
+Crude oil extracted from the Wilhelm zone has a significantly higher mean level of aromatic hydrocarbons than crude oil extracted at either the Sub-Milina or the Upper zones. 
+
+Crude oil extracted from the Wilhelm zone has a significantly lower mean level of vanadium and beryllium than crude oil extracted at the Upper zones.
+
+Crude oil extracted from the Wilhelm zone has a significantly higher mean level of iron and saturated hydrocarbons than crude oil extracted at the Upper zones. 
+
+There is no difference in mean iron and aromatic hydrocarbons levels for crude oil extracted from the Sub-Mulinia and Upper zones.
+
+Crude oil extracted from the Sub-Mulinia zone has a significantly lower mean level of vanadium and beryllium than crude oil extracted at the Upper zones.
+
+Crude oil extracted from the Sub-Mulinia zone has a significantly higher mean level of saturated hydrocarbons than crude oil extracted at the Upper zones. 
+
+
+
+
+
+

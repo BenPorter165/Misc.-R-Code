@@ -1,0 +1,47 @@
+---
+title: "lab1"
+output: html_document
+---
+Exercise 1
+```{r}
+x = 4
+x = x + 2
+x = x * 3
+x = x - 6
+x = x/3
+x
+```
+
+
+Exercise 2
+```{r}
+tips <- read.csv("http://www.ggobi.org/book/data/tips.csv") 
+dim(tips)
+str(tips)
+
+unique(tips["day"])
+```
+1. 244
+2. 8
+3. integer: obs and size; numeric: totbill and tip; 
+   Character: sex, smoker, day, time
+4. Thursday, Friday, Saturday, Sunday
+
+Exercise 3
+```{r}
+library(ggplot2)
+
+qplot(totbill, tip, data = tips)
+
+```
+
+There is a moderate positive relationship between total bill and tip.
+
+Exercise 4
+```{r}
+lm(tip ~ totbill, data = tips)
+
+```
+Intercept: 0.9203;
+Slope: 0.1050;
+
